@@ -1,0 +1,22 @@
+### gradle ###
+.gradle
+
+### vertx ###
+.vertx
+
+### class ###
+out
+bin
+target
+
+### idea ###
+.idea
+*.iml
+
+### log ###
+logs
+*.log
+
+### mac ###
+*.DS_Store
+
