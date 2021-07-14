@@ -47,7 +47,7 @@ h3 {
   margin: 40px 0 0;
 }
 ul {
-  list-style-type: none;
+  list-style-valueType: none;
   padding: 0;
 }
 li {

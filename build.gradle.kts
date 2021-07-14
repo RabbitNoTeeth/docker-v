@@ -20,13 +20,17 @@ val mainClassName = "cn.youyi.dockerv.AppBootstrap"
 
 dependencies {
   implementation(platform("io.vertx:vertx-stack-depchain:$vertxVersion"))
-  implementation("io.vertx:vertx-web-validation")
-  implementation("io.vertx:vertx-auth-jwt")
+//  implementation("io.vertx:vertx-auth-jwt")
   implementation("io.vertx:vertx-web")
-  implementation("io.vertx:vertx-pg-client")
-  implementation("io.vertx:vertx-mail-client")
-  implementation("io.vertx:vertx-web-templ-freemarker")
+//  implementation("io.vertx:vertx-pg-client")
+//  implementation("io.vertx:vertx-mail-client")
+//  implementation("io.vertx:vertx-web-templ-freemarker")
   implementation("com.jcraft:jsch:0.1.55")
+  implementation("org.slf4j:slf4j-log4j12:1.7.21")
+  implementation("org.slf4j:slf4j-api:1.7.21")
+  implementation("org.slf4j:slf4j-api:RELEASE")
+  implementation("commons-io:commons-io:2.10.0")
+  implementation("org.apache.commons:commons-lang3:3.12.0")
   testImplementation("io.vertx:vertx-junit5")
   testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
 }
