@@ -1,10 +1,7 @@
 package cn.youyi.dockerv.http;
 
 import cn.youyi.dockerv.http.context.HttpServerContext;
-import cn.youyi.dockerv.http.handler.FailureHandler;
-import cn.youyi.dockerv.http.handler.ResponseBodyHandler;
-import cn.youyi.dockerv.http.handler.ResponseFinalHandler;
-import cn.youyi.dockerv.http.handler.ResponseHeaderHandler;
+import cn.youyi.dockerv.http.handler.*;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -23,7 +20,8 @@ public class HttpServerVerticle extends AbstractVerticle {
     // 挂载前置路由处理器
     router
       .route()
-      .handler(BodyHandler.create())
+      .handler(new CrosHandler())
+//      .handler(BodyHandler.create())
       .handler(new ResponseHeaderHandler());
 
     // 挂载子路由

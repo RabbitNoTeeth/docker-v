@@ -2,7 +2,7 @@ package cn.youyi.dockerv.docker.session;
 
 public class DockerSession {
 
-  private final long id;
+  private final String id;
 
   private final String name;
 
@@ -11,7 +11,7 @@ public class DockerSession {
   private final DockerCmdExecutor cmdExecutor;
 
   public DockerSession(String name, String host, DockerCmdExecutor cmdExecutor) {
-    this.id = System.nanoTime();
+    this.id = System.nanoTime() + "";
     this.name = name;
     this.host = host;
     this.cmdExecutor = cmdExecutor;
@@ -21,7 +21,7 @@ public class DockerSession {
     this.cmdExecutor.close();
   }
 
-  public long getId() {
+  public String getId() {
     return id;
   }
 
@@ -36,4 +36,5 @@ public class DockerSession {
   public DockerCmdExecutor getCmdExecutor() {
     return cmdExecutor;
   }
+
 }

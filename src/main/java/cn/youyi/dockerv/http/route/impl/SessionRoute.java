@@ -8,16 +8,20 @@ import cn.youyi.dockerv.http.paramvalidation.NotBlankParam;
 import cn.youyi.dockerv.http.route.MountableRoute;
 import cn.youyi.dockerv.http.context.RoutingContextHelper;
 import cn.youyi.dockerv.ssh.SSHConnection;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class SessionRoute implements MountableRoute {
 
   @Override
   public void mount(Router router) {
-    router.get("/session/list").handler(this::list);
+    router.get("/api/session/list").handler(this::list);
     router
-      .post("/session/add")
+      .post("/api/session/add")
       .handler(ParamValidationHandler
         .create()
         .addParam(new NotBlankParam("os"))
@@ -54,7 +58,12 @@ public class SessionRoute implements MountableRoute {
    * @param routingContext
    */
   private void list(RoutingContext routingContext) {
-    RoutingContextHelper.success(routingContext, "these are all sessions");
+    List<DockerSession> sessions = DockerSessionContainer.getSessions();
+    List<JsonObject> res = sessions
+      .stream()
+      .map(session -> new JsonObject().put("id", session.getId()).put("name", session.getName()).put("host", session.getHost()))
+      .collect(Collectors.toList());
+    RoutingContextHelper.success(routingContext, res);
   }
 
 }
