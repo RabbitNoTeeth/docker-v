@@ -10,7 +10,12 @@
         class="bg-primary text-white shadow-2"
       >
         <template v-for="(item, index) in tabs">
-          <q-tab :key="index" :name="item.id" icon="fas fa-terminal" :label="item.name"/>
+          <q-tab :key="index" :name="item.id" icon="fas fa-terminal">
+            <template v-slot:default>
+              <span style="margin-left: 10px">{{item.name}}</span>
+              <q-icon name="fas fa-times" color="orange" style="margin-left: 15px;font-size: 1.5em;" @click="onCloseClick"/>
+            </template>
+          </q-tab>
         </template>
       </q-tabs>
     </q-header>
@@ -80,6 +85,14 @@ export default {
       app.tabs[app.tabs.length - 1] = session;
       app.tabs.push(createsessiontab);
       app.tab = session.id;
+    },
+    onCloseClick() {
+      const app = this;
+      app.$q.notify({
+        type: 'warning',
+        position: 'top',
+        message: 'todo'
+      });
     }
   }
 }
