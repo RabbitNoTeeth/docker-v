@@ -17,7 +17,42 @@
             @click="addClick"
           />
         </div>
-        <div>
+        <div style="position: absolute;right: 15px">
+          <el-input
+            size="mini"
+            placeholder="REPOSITORY"
+            clearable
+            style="width: 150px; margin-right: 5px"
+            v-model="searchParams.REPOSITORY">
+          </el-input>
+          <el-input
+            size="mini"
+            placeholder="TAG"
+            clearable
+            style="width: 150px; margin-right: 5px"
+            v-model="searchParams.TAG">
+          </el-input>
+          <el-input
+            size="mini"
+            placeholder="IMAGE_ID"
+            clearable
+            style="width: 150px; margin-right: 5px"
+            v-model="searchParams.IMAGE_ID">
+          </el-input>
+          <q-btn
+            color="primary"
+            size="sm"
+            label="search"
+            style="margin-right: 5px"
+            @click="refreshClick"
+          />
+          <q-btn
+            color="primary"
+            size="sm"
+            outline
+            label="reset"
+            @click="resetClick"
+          />
         </div>
       </template>
       <template v-slot:body-cell-operations="props">
@@ -44,7 +79,8 @@ export default {
         {name: 'IMAGE_ID', field: 'IMAGE_ID', label: 'IMAGE_ID', align: 'left'},
         {name: 'CREATED', field: 'CREATED', label: 'CREATED', align: 'left'},
         {name: 'SIZE', field: 'SIZE', label: 'SIZE', align: 'left'},
-      ]
+      ],
+      searchParams: {}
     }
   },
   props: {
@@ -71,7 +107,8 @@ export default {
       const app = this;
       app.$axios.get('/api/image/list', {
         params: {
-          sessionId: app.sessionId
+          sessionId: app.sessionId,
+          ...app.searchParams
         }
       })
         .then(res => {
@@ -95,6 +132,13 @@ export default {
             message: 'could not load images. ' + e
           });
         })
+    },
+    refreshClick() {
+      this.queryList();
+    },
+    resetClick() {
+      this.searchParams = {};
+      this.queryList();
     },
     addClick() {
       // todo
