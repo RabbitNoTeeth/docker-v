@@ -6,6 +6,7 @@
         v-model="tab"
         align="left"
         inline-label
+        no-caps
         class="bg-primary text-white shadow-2"
       >
         <template v-for="(item, index) in tabs">
@@ -15,10 +16,10 @@
     </q-header>
 
     <q-page-container style="width: 100%;height: 100%;position: fixed">
-      <q-tab-panels v-model="tab" animated>
+      <q-tab-panels v-model="tab" animated style="width: 100%;height: 100%">
         <template v-for="(item, index) in tabs">
           <q-tab-panel :key="index" :name="item.id" style="width: 100%;height: 100%">
-            <session :id="item.id"></session>
+            <session :id="item.id" @add-session="onAddSession"></session>
           </q-tab-panel>
         </template>
       </q-tab-panels>
@@ -30,7 +31,7 @@
 
 <script>
 
-import Session from "pages/Session";
+import Session from "pages/main/Session";
 export default {
   name: 'MainLayout',
   components: {Session},
@@ -51,14 +52,12 @@ export default {
         .then(res => {
           if (res.data.success) {
             app.tabs = res.data.data;
-            if (app.tabs.length === 0) {
-              app.tabs.push({
-                id: 'new',
-                name: 'create session',
-                host: ''
-              });
-              app.tab = 'new';
-            }
+            app.tabs.push({
+              id: 'new',
+              name: 'create session',
+              host: ''
+            });
+            app.tab = app.tabs[0].id;
           } else {
             app.$q.notify({
               type: 'warning',
@@ -74,6 +73,13 @@ export default {
             message: 'failed to load session list. ' + e
           });
         })
+    },
+    onAddSession(session) {
+      const app = this;
+      const createsessiontab = app.tabs[app.tabs.length - 1];
+      app.tabs[app.tabs.length - 1] = session;
+      app.tabs.push(createsessiontab);
+      app.tab = session.id;
     }
   }
 }

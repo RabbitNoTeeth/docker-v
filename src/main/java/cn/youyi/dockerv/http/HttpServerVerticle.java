@@ -20,8 +20,8 @@ public class HttpServerVerticle extends AbstractVerticle {
     // 挂载前置路由处理器
     router
       .route()
+      .handler(BodyHandler.create())
       .handler(new CrosHandler())
-//      .handler(BodyHandler.create())
       .handler(new ResponseHeaderHandler());
 
     // 挂载子路由

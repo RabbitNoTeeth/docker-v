@@ -3,9 +3,7 @@ package cn.youyi.dockerv.docker.parser;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public abstract class AbstractDockerOutParser {
@@ -16,8 +14,12 @@ public abstract class AbstractDockerOutParser {
     this.out = out;
   }
 
-  private List<String> parseLine(String line) {
-    return Arrays.stream(line.split("[ ]{2,}")).filter(StringUtils::isNotBlank).collect(Collectors.toList());
+  private LinkedHashMap<Integer, String> parseLine(String line) {
+    LinkedHashMap<Integer, String> map = new LinkedHashMap<>();
+    Arrays.stream(line.split("[ ]{2,}"))
+      .filter(StringUtils::isNotBlank)
+      .forEach(s -> map.put(line.indexOf(s), s));
+    return map;
   }
 
   protected List<JsonObject> parse2JsonObjectList() {
@@ -28,16 +30,15 @@ public abstract class AbstractDockerOutParser {
     List<String> lines = Arrays.stream(out.split("\n")).filter(StringUtils::isNotBlank).collect(Collectors.toList());
     if (lines.size() > 0) {
       String titleLine = lines.get(0);
-      List<String> titles = parseLine(titleLine);
+      LinkedHashMap<Integer, String> titleMap = parseLine(titleLine);
       for (int i = 1; i < lines.size(); i++) {
         String contentLine = lines.get(i);
-        List<String> contents = parseLine(contentLine);
+        LinkedHashMap<Integer, String> contentMap = parseLine(contentLine);
         JsonObject jsonObject = new JsonObject();
-        for (int j = 0; j < titles.size(); j++) {
-          String title = titles.get(j);
-          String content = j < contents.size() ? contents.get(j) : null;
-          jsonObject.put(title.replaceAll(" ", "_"), content);
-        }
+        titleMap.forEach((k, v) -> {
+          String content = contentMap.getOrDefault(k, null);
+          jsonObject.put(v.replaceAll(" ", "_"), content);
+        });
         res.add(jsonObject);
       }
     }

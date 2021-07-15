@@ -46,7 +46,8 @@ public class SessionRoute implements MountableRoute {
       SSHConnection sshConnection = new SSHConnection(host, Integer.parseInt(port), user, password);
       DockerSession dockerSession = new DockerSession(name, host, sshConnection);
       DockerSessionContainer.addSession(dockerSession);
-      RoutingContextHelper.success(routingContext, dockerSession.getId());
+      JsonObject res = new JsonObject().put("id", dockerSession.getId()).put("name", dockerSession.getName()).put("host", dockerSession.getHost());
+      RoutingContextHelper.success(routingContext, res);
     } else {
       routingContext.fail(new CustomException("the value of param [os] is invalid"));
     }

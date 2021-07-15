@@ -6,9 +6,6 @@ const baseUrl = process.env.API;
 
 const axiosConfig = {
   withCredentials: true,
-  headers: {
-    'Content-Type': 'application/x-www-form-urlencoded',
-  },
   transformRequest: [(data) => qs.stringify(data, {skipNulls: true})]
 }
 
@@ -16,6 +13,8 @@ const instance = axios.create({
   baseURL: baseUrl,
   ...axiosConfig
 })
+instance.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
+
 
 Vue.prototype.$axios = instance
 Vue.prototype.$baseUrl = baseUrl
