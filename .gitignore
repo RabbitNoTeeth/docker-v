@@ -9,6 +9,7 @@ file-uploads
 out
 bin
 target
+build
 
 ### idea ###
 .idea
