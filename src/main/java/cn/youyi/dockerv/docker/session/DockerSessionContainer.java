@@ -31,7 +31,10 @@ public class DockerSessionContainer {
    * @param sessionId id of session
    * @return          target session
    */
-  public static DockerSession getSession(String sessionId) {
+  public static DockerSession getSession(String sessionId) throws DockerSessionNotExistException {
+    if (!SESSION_MAP.containsKey(sessionId)) {
+      throw new DockerSessionNotExistException("there is no session with id '" + sessionId + "'");
+    }
     return SESSION_MAP.get(sessionId);
   }
 

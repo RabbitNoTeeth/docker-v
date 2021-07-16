@@ -28,7 +28,7 @@ public class SSHConnection implements DockerCmdExecutor {
 
   private final Session session;
 
-  public SSHConnection(String host, int port, String user, String password) {
+  public SSHConnection(String host, int port, String user, String password) throws SSHConnectException {
     this.host = host;
     this.port = port;
     this.user = user;
@@ -42,7 +42,7 @@ public class SSHConnection implements DockerCmdExecutor {
       this.session.connect();
     } catch (Exception e) {
       LOGGER.error("ssh {}:{} connect failed", host, port, e);
-      throw new IllegalStateException("ssh " + host + ":" + port + " connect failed", e);
+      throw new SSHConnectException("can not connect to the ssh " + host + ":" + port, e);
     }
   }
 

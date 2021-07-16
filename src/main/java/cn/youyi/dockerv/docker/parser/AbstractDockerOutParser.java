@@ -23,7 +23,7 @@ public abstract class AbstractDockerOutParser {
   }
 
   protected List<JsonObject> parse2JsonObjectList() {
-    if (!isValid()) {
+    if (!success()) {
       throw new IllegalArgumentException("out is invalid");
     }
     List<JsonObject> res = new ArrayList<>();
@@ -45,6 +45,6 @@ public abstract class AbstractDockerOutParser {
     return res;
   }
 
-  protected abstract boolean isValid();
+  public abstract boolean success();
 
 }

@@ -54,11 +54,11 @@
             >
               <q-tab-panel name="Image">
                 <div class="text-h4 q-mb-md">Images</div>
-                <image-list :session-id="id"></image-list>
+                <image-list></image-list>
               </q-tab-panel>
               <q-tab-panel name="Container">
                 <div class="text-h4 q-mb-md">Containers</div>
-                <container-list :session-id="id"></container-list>
+                <container-list></container-list>
               </q-tab-panel>
             </q-tab-panels>
           </template>
@@ -66,18 +66,18 @@
         </q-splitter>
       </div>
     </template>
-    <session-form v-if="showForm" :os="os" @close="formClose" @success="formSuccess"></session-form>
+    <session-add-form v-if="showForm" :os="os" @close="formClose" @success="formSuccess"></session-add-form>
   </div>
 </template>
 
 <script>
-import SessionForm from "pages/main/SessionForm";
+import SessionAddForm from "pages/main/SessionAddForm";
 import ImageList from "pages/main/ImageList";
 import ContainerList from "pages/main/ContainerList";
 
 export default {
   name: "Session",
-  components: {ContainerList, ImageList, SessionForm},
+  components: {ContainerList, ImageList, SessionAddForm},
   data() {
     return {
       showForm: false,
@@ -92,12 +92,20 @@ export default {
       default: null
     }
   },
+  provide: function () {
+    return {
+      sessionId: this.id
+    }
+  },
   methods: {
     onWindowsClick() {
       const app = this;
       app.$q.notify({
         type: 'warning',
-        position: 'top',
+        position: 'center',
+        multiLine: true,
+        closeBtn: true,
+        timeout: 30000,
         message: 'Support for Windows is in development...'
       });
     },
@@ -109,7 +117,10 @@ export default {
       const app = this;
       app.$q.notify({
         type: 'warning',
-        position: 'top',
+        position: 'center',
+        multiLine: true,
+        closeBtn: true,
+        timeout: 30000,
         message: 'Support for MacOS is in development...'
       });
     },

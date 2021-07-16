@@ -42,7 +42,7 @@ public class DockerPs {
     }
 
     @Override
-    protected boolean isValid() {
+    public boolean success() {
       return StringUtils.isNotBlank(out) && out.startsWith("CONTAINER");
     }
 

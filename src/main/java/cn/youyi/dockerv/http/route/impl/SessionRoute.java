@@ -37,20 +37,25 @@ public class SessionRoute implements MountableRoute {
    */
   private void add(RoutingContext routingContext) {
     String os = RoutingContextHelper.getRequestParam(routingContext, "os");
-    if ("LINUX".equals(os)) {
-      String name = RoutingContextHelper.getRequestParam(routingContext, "name");
-      String host = RoutingContextHelper.getRequestParam(routingContext, "host");
-      String port = RoutingContextHelper.getRequestParam(routingContext, "port");
-      String user = RoutingContextHelper.getRequestParam(routingContext, "user");
-      String password = RoutingContextHelper.getRequestParam(routingContext, "password");
-      SSHConnection sshConnection = new SSHConnection(host, Integer.parseInt(port), user, password);
-      DockerSession dockerSession = new DockerSession(name, host, sshConnection);
-      DockerSessionContainer.addSession(dockerSession);
-      JsonObject res = new JsonObject().put("id", dockerSession.getId()).put("name", dockerSession.getName()).put("host", dockerSession.getHost());
-      RoutingContextHelper.success(routingContext, res);
-    } else {
-      routingContext.fail(new CustomException("the value of param [os] is invalid"));
+    try {
+      if ("LINUX".equals(os)) {
+        String name = RoutingContextHelper.getRequestParam(routingContext, "name");
+        String host = RoutingContextHelper.getRequestParam(routingContext, "host");
+        String port = RoutingContextHelper.getRequestParam(routingContext, "port");
+        String user = RoutingContextHelper.getRequestParam(routingContext, "user");
+        String password = RoutingContextHelper.getRequestParam(routingContext, "password");
+        SSHConnection sshConnection = new SSHConnection(host, Integer.parseInt(port), user, password);
+        DockerSession dockerSession = new DockerSession(name, host, sshConnection);
+        DockerSessionContainer.addSession(dockerSession);
+        JsonObject res = new JsonObject().put("id", dockerSession.getId()).put("name", dockerSession.getName()).put("host", dockerSession.getHost());
+        RoutingContextHelper.success(routingContext, res);
+      } else {
+        routingContext.fail(new CustomException("the value of param [os] is invalid"));
+      }
+    } catch (Exception e) {
+      routingContext.fail(e);
     }
+
   }
 
   /**

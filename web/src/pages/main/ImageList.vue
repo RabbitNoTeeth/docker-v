@@ -61,14 +61,16 @@
         </q-td>
       </template>
     </q-table>
+    <image-add-form v-if="showAddForm" @close="onAddFormClose" @success="onAddFormSuccess"></image-add-form>
   </div>
 </template>
 
 <script>
 
+import ImageAddForm from "pages/main/ImageAddForm";
 export default {
   name: "ImageList",
-  components: {},
+  components: {ImageAddForm},
   data() {
     return {
       data: [],
@@ -80,14 +82,11 @@ export default {
         {name: 'CREATED', field: 'CREATED', label: 'CREATED', align: 'left'},
         {name: 'SIZE', field: 'SIZE', label: 'SIZE', align: 'left'},
       ],
-      searchParams: {}
+      searchParams: {},
+      showAddForm: false
     }
   },
-  props: {
-    sessionId: {
-      type: String
-    }
-  },
+  inject: ['sessionId'],
   mounted() {
     const app = this;
     app.queryList();
@@ -141,8 +140,15 @@ export default {
       this.queryList();
     },
     addClick() {
-      // todo
-    }
+      this.showAddForm = true;
+    },
+    onAddFormClose() {
+      this.showAddForm = false;
+    },
+    onAddFormSuccess() {
+      this.onAddFormClose();
+      this.queryList();
+    },
   }
 }
 </script>

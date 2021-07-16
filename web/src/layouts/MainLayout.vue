@@ -59,7 +59,7 @@ export default {
             app.tabs = res.data.data;
             app.tabs.push({
               id: 'new',
-              name: 'create session',
+              name: 'new session',
               host: ''
             });
             app.tab = app.tabs[0].id;

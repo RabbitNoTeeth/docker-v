@@ -124,9 +124,9 @@ module.exports = function (ctx) {
       workboxPluginMode: 'GenerateSW', // 'GenerateSW' or 'InjectManifest'
       workboxOptions: {}, // only for GenerateSW
       manifest: {
-        name: `blueberry-page`,
-        short_name: `blueberry-page`,
-        description: `page of blueberry`,
+        name: `docker-v`,
+        short_name: `docker-v`,
+        description: `page of docker-v`,
         display: 'standalone',
         orientation: 'portrait',
         background_color: '#ffffff',
@@ -191,7 +191,7 @@ module.exports = function (ctx) {
       builder: {
         // https://www.electron.build/configuration/configuration
 
-        appId: 'blueberry-page'
+        appId: 'docker-v'
       },
 
       // More info: https://v1.quasar.dev/quasar-cli/developing-electron-apps/node-integration

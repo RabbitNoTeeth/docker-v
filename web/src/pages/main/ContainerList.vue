@@ -49,11 +49,7 @@ export default {
       ]
     }
   },
-  props: {
-    sessionId: {
-      type: String
-    }
-  },
+  inject: ['sessionId'],
   mounted() {
     const app = this;
     app.queryList();

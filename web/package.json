@@ -1,8 +1,8 @@
 {
-  "name": "blueberry-page",
+  "name": "docker-v",
   "version": "0.0.1",
-  "description": "page of blueberry",
-  "productName": "blueberry-page",
+  "description": "page of docker-v",
+  "productName": "docker-v",
   "author": "刘新冬 <864426487@qq.com>",
   "private": true,
   "scripts": {

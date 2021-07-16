@@ -45,11 +45,17 @@
             :rules="[ val => val && val.length > 0 || 'please input the ssh password']"
           />
           <div style="text-align: right">
-            <q-btn label="提交" type="submit" color="primary"/>
-            <q-btn label="重置" type="reset" color="primary" flat class="q-ml-sm"/>
+            <q-btn label="submit" type="submit" color="primary"/>
+            <q-btn label="reset" type="reset" color="primary" flat class="q-ml-sm"/>
           </div>
         </q-form>
       </q-card-section>
+      <q-inner-loading :showing="loading">
+        <div class="row">
+          <q-spinner-gears size="50px" color="primary" />
+          <span style="margin-left: 15px;font-size: 26px;color: #1976d2">connecting...</span>
+        </div>
+      </q-inner-loading>
     </q-card>
   </q-dialog>
 </template>
@@ -57,11 +63,12 @@
 <script>
 
 export default {
-  name: "SessionForm",
+  name: "SessionAddForm",
   data() {
     return {
       show: true,
-      formData_: {}
+      formData_: {},
+      loading: false
     }
   },
   props: {
@@ -78,6 +85,7 @@ export default {
     },
     onSubmit() {
       const app = this;
+      app.loading = true;
       const url = '/api/session/add';
       const params = {
         ...app.formData_,
@@ -85,17 +93,22 @@ export default {
       };
       app.$axios.post(url, params)
         .then(res => {
+          app.loading = false;
           if (res.data.success) {
             app.$emit('success', res.data.data);
           } else {
             app.$q.notify({
               type: 'warning',
-              position: 'top',
-              message: 'could not create session: ' + res.data.message
+              position: 'center',
+              multiLine: true,
+              closeBtn: true,
+              timeout: 30000,
+              message: res.data.message
             });
           }
         })
         .catch(e => {
+          app.loading = false;
           app.$q.notify({
             type: 'negative',
             position: 'top',
