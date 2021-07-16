@@ -55,22 +55,31 @@
           />
         </div>
       </template>
-      <template v-slot:body-cell-operations="props">
+      <template v-slot:body-cell-OPERATIONS="props">
         <q-td :props="props">
-
+          <q-btn
+            color="negative"
+            size="xs"
+            label="remove"
+            style="margin-right: 5px"
+            @click="onRemoveClick(props.row)"
+          />
         </q-td>
       </template>
     </q-table>
     <image-add-form v-if="showAddForm" @close="onAddFormClose" @success="onAddFormSuccess"></image-add-form>
+    <image-remove-confirm v-if="showRemoveConfirm" :data="curImage" @close="onRemoveConfirmClose" @success="onRemoveConfirmSuccess"></image-remove-confirm>
   </div>
 </template>
 
 <script>
 
 import ImageAddForm from "pages/main/ImageAddForm";
+import ImageRemoveConfirm from "pages/main/ImageRemoveConfirm";
+
 export default {
   name: "ImageList",
-  components: {ImageAddForm},
+  components: {ImageRemoveConfirm, ImageAddForm},
   data() {
     return {
       data: [],
@@ -81,9 +90,12 @@ export default {
         {name: 'IMAGE_ID', field: 'IMAGE_ID', label: 'IMAGE_ID', align: 'left'},
         {name: 'CREATED', field: 'CREATED', label: 'CREATED', align: 'left'},
         {name: 'SIZE', field: 'SIZE', label: 'SIZE', align: 'left'},
+        {name: 'OPERATIONS', field: 'OPERATIONS', label: 'OPERATIONS', align: 'left'}
       ],
       searchParams: {},
-      showAddForm: false
+      showAddForm: false,
+      showRemoveConfirm: false,
+      curImage: null
     }
   },
   inject: ['sessionId'],
@@ -149,6 +161,18 @@ export default {
       this.onAddFormClose();
       this.queryList();
     },
+    onRemoveClick(container) {
+      this.curImage = container;
+      this.showRemoveConfirm = true;
+    },
+    onRemoveConfirmClose() {
+      this.curImage = null;
+      this.showRemoveConfirm = false;
+    },
+    onRemoveConfirmSuccess() {
+      this.onRemoveConfirmClose();
+      this.queryList();
+    }
   }
 }
 </script>

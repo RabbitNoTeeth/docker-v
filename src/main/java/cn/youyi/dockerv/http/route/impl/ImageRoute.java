@@ -1,8 +1,6 @@
 package cn.youyi.dockerv.http.route.impl;
 
-import cn.youyi.dockerv.docker.command.DockerImages;
-import cn.youyi.dockerv.docker.command.DockerLoad;
-import cn.youyi.dockerv.docker.command.DockerPull;
+import cn.youyi.dockerv.docker.command.*;
 import cn.youyi.dockerv.docker.session.DockerSession;
 import cn.youyi.dockerv.docker.session.DockerSessionContainer;
 import cn.youyi.dockerv.http.context.RoutingContextHelper;
@@ -39,6 +37,35 @@ public class ImageRoute implements MountableRoute {
         .addParam(new NotBlankParam("sessionId"))
         .addParam(new NotBlankParam("tarFilePath")))
       .handler(this::load);
+    // todo build
+    router.post("/api/image/remove")
+      .handler(ParamValidationHandler
+        .create()
+        .addParam(new NotBlankParam("sessionId"))
+        .addParam(new NotBlankParam("imageId")))
+      .handler(this::remove);
+  }
+
+  /**
+   * remove an image
+   * @param context
+   */
+  private void remove(RoutingContext context) {
+    String sessionId = RoutingContextHelper.getRequestParam(context, "sessionId");
+    String imageId = RoutingContextHelper.getRequestParam(context, "imageId");
+    try {
+      DockerSession session = DockerSessionContainer.getSession(sessionId);
+      String command = DockerRmi.Command.create(imageId).get();
+      String out = session.getCmdExecutor().command(command);
+      DockerRmi.Parser parser = DockerRmi.Parser.create(out, imageId);
+      if (parser.success()) {
+        RoutingContextHelper.success(context, imageId);
+      } else {
+        context.fail(new CustomException(out));
+      }
+    } catch (Exception e) {
+      context.fail(e);
+    }
   }
 
   /**

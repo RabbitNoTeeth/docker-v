@@ -10,7 +10,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -67,38 +70,40 @@ public class SSHConnection implements DockerCmdExecutor {
   @Override
   public String command(String command) throws DockerCmdExecException {
     ChannelExec channelExec = null;
-    InputStream in = null;
-    InputStream err = null;
     try {
       channelExec = (ChannelExec) session.openChannel("exec");
-      in = channelExec.getInputStream();
-      err = channelExec.getErrStream();
+      InputStream stdStream = channelExec.getInputStream();
+      InputStream errStream = channelExec.getErrStream();
       channelExec.setCommand(command);
-      channelExec.setErrStream(System.err);
       channelExec.connect();
-      String error = IOUtils.toString(err, StandardCharsets.UTF_8);
-      if (StringUtils.isNotBlank(error)) {
-        throw new DockerCmdExecException(error);
+
+      byte[] tmp = new byte[1024];
+      StringBuffer stdBuffer = new StringBuffer();
+      StringBuffer errBuffer = new StringBuffer();
+      while (errStream.available() > 0) {
+        int i = errStream.read(tmp, 0, 1024);
+        if (i < 0) {
+          break;
+        }
+        errBuffer.append(new String(tmp, 0, i));
       }
-      return IOUtils.toString(in, StandardCharsets.UTF_8);
+      while (stdStream.available() > 0) {
+        int i = stdStream.read(tmp, 0, 1024);
+        if (i < 0) {
+          break;
+        }
+        stdBuffer.append(new String(tmp, 0, i));
+      }
+      System.out.println(channelExec.getExitStatus());
+      throw new DockerCmdExecException();
     } catch (Exception e) {
       if (e instanceof DockerCmdExecException) {
         throw (DockerCmdExecException) e;
       }
       throw new DockerCmdExecException(e);
     } finally {
-      try {
-        if (in != null) {
-          in.close();
-        }
-        if (err != null) {
-          err.close();
-        }
-        if (channelExec != null && !channelExec.isClosed()) {
-          channelExec.disconnect();
-        }
-      } catch (Exception e) {
-        // ignore
+      if (channelExec != null && !channelExec.isClosed()) {
+        channelExec.disconnect();
       }
     }
   }
