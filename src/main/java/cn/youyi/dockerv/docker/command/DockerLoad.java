@@ -8,21 +8,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class DockerRmi {
+public class DockerLoad {
 
-  private DockerRmi() {
+  private DockerLoad() {
   }
 
   public static class Command {
     private List<String> options = new ArrayList<>();
-    private List<String> images = new ArrayList<>();
+    private final String tarFilePath;
 
-    private Command(List<String> images) {
-      this.images.addAll(images);
+    private Command(String tarFilePath) {
+      this.tarFilePath = tarFilePath;
     }
 
-    public static Command create(String... images) {
-      return new Command(Arrays.asList(images));
+    public static Command create(String tarFilePath) {
+      return new Command(tarFilePath);
     }
 
     public Command addOption(String option) {
@@ -31,9 +31,9 @@ public class DockerRmi {
     }
 
     public String get() {
-      StringBuilder cmdSb = new StringBuilder().append("docker").append(" ").append("rmi");
+      StringBuilder cmdSb = new StringBuilder().append("docker").append(" ").append("load").append(" ").append("-i");
+      cmdSb.append(" ").append(tarFilePath);
       options.forEach(option -> cmdSb.append(" ").append(option));
-      images.forEach(image -> cmdSb.append(" ").append(image));
       return cmdSb.toString();
     }
   }
@@ -50,7 +50,7 @@ public class DockerRmi {
 
     @Override
     public boolean success() {
-      return StringUtils.isNotBlank(out);
+      return StringUtils.isNotBlank(out) && out.contains("Loaded image");
     }
 
     public List<JsonObject> parse() {

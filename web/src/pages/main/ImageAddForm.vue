@@ -149,6 +149,25 @@ export default {
         .then(res => {
           app.loading = false;
           if (res.data.success) {
+            let successMessage = 'success';
+            switch (tab) {
+              case 'pull':
+                successMessage = 'pull success';
+                break;
+              case 'load':
+                successMessage = 'load success';
+                break;
+              case 'build':
+                successMessage = 'build success';
+                break;
+              default:
+                return;
+            }
+            app.$q.notify({
+              type: 'positive',
+              position: 'top',
+              message: successMessage
+            });
             app.$emit('success');
           } else {
             app.$q.notify({

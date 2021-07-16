@@ -1,6 +1,7 @@
 package cn.youyi.dockerv.http.route.impl;
 
 import cn.youyi.dockerv.docker.command.DockerImages;
+import cn.youyi.dockerv.docker.command.DockerLoad;
 import cn.youyi.dockerv.docker.command.DockerPull;
 import cn.youyi.dockerv.docker.session.DockerSession;
 import cn.youyi.dockerv.docker.session.DockerSessionContainer;
@@ -32,6 +33,34 @@ public class ImageRoute implements MountableRoute {
         .addParam(new NotBlankParam("sessionId"))
         .addParam(new NotBlankParam("image")))
       .handler(this::pull);
+    router.post("/api/image/load")
+      .handler(ParamValidationHandler
+        .create()
+        .addParam(new NotBlankParam("sessionId"))
+        .addParam(new NotBlankParam("tarFilePath")))
+      .handler(this::load);
+  }
+
+  /**
+   * load image from a tar file
+   * @param context
+   */
+  private void load(RoutingContext context) {
+    String sessionId = RoutingContextHelper.getRequestParam(context, "sessionId");
+    String tarFilePath = RoutingContextHelper.getRequestParam(context, "tarFilePath");
+    try {
+      DockerSession session = DockerSessionContainer.getSession(sessionId);
+      String command = DockerLoad.Command.create(tarFilePath).addOption("-q").get();
+      String out = session.getCmdExecutor().command(command);
+      DockerLoad.Parser parser = DockerLoad.Parser.create(out);
+      if (parser.success()) {
+        RoutingContextHelper.success(context, tarFilePath);
+      } else {
+        context.fail(new CustomException(out));
+      }
+    } catch (Exception e) {
+      context.fail(e);
+    }
   }
 
   /**
