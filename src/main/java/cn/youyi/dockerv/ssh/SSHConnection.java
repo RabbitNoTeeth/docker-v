@@ -1,10 +1,12 @@
 package cn.youyi.dockerv.ssh;
 
+import cn.youyi.dockerv.docker.session.DockerCmdExecException;
 import cn.youyi.dockerv.docker.session.DockerCmdExecutor;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,28 +60,45 @@ public class SSHConnection implements DockerCmdExecutor {
 
   /**
    * exec the docker command
-   * @param command   docker command
-   * @return          os output
+   *
+   * @param command docker command
+   * @return os output
    */
   @Override
-  public String command(String command) throws Exception{
+  public String command(String command) throws DockerCmdExecException {
     ChannelExec channelExec = null;
     InputStream in = null;
+    InputStream err = null;
     try {
       channelExec = (ChannelExec) session.openChannel("exec");
       in = channelExec.getInputStream();
+      err = channelExec.getErrStream();
       channelExec.setCommand(command);
       channelExec.setErrStream(System.err);
       channelExec.connect();
+      String error = IOUtils.toString(err, StandardCharsets.UTF_8);
+      if (StringUtils.isNotBlank(error)) {
+        throw new DockerCmdExecException(error);
+      }
       return IOUtils.toString(in, StandardCharsets.UTF_8);
     } catch (Exception e) {
-      throw e;
-    } finally {
-      if (in != null) {
-        in.close();
+      if (e instanceof DockerCmdExecException) {
+        throw (DockerCmdExecException) e;
       }
-      if (channelExec != null && !channelExec.isClosed()) {
-        channelExec.disconnect();
+      throw new DockerCmdExecException(e);
+    } finally {
+      try {
+        if (in != null) {
+          in.close();
+        }
+        if (err != null) {
+          err.close();
+        }
+        if (channelExec != null && !channelExec.isClosed()) {
+          channelExec.disconnect();
+        }
+      } catch (Exception e) {
+        // ignore
       }
     }
   }

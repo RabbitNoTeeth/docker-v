@@ -30,7 +30,7 @@
             filled
             v-model="formData_.port"
             label="port *"
-            :rules="[ val => val && val.length > 0 || 'please input the ssh port']"
+            :rules="[ val => val !== null && val !== '' || 'please input the ssh port']"
           />
           <q-input
             filled
@@ -67,7 +67,13 @@ export default {
   data() {
     return {
       show: true,
-      formData_: {},
+      formData_: {
+        name: '192.168.3.35',
+        host: '192.168.3.35',
+        port: 22,
+        user: 'root',
+        password: '123456'
+      },
       loading: false
     }
   },

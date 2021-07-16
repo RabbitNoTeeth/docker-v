@@ -1,5 +1,6 @@
 package cn.youyi.dockerv.http.handler;
 
+import cn.youyi.dockerv.docker.session.DockerCmdExecException;
 import cn.youyi.dockerv.docker.session.DockerSessionNotExistException;
 import cn.youyi.dockerv.http.exception.CustomException;
 import cn.youyi.dockerv.http.paramvalidation.ParamValidationException;
@@ -21,6 +22,8 @@ public class FailureHandler implements Handler<RoutingContext> {
     } else if (err instanceof SSHConnectException) {
       res.put("message", err.getMessage());
     } else if (err instanceof DockerSessionNotExistException) {
+      res.put("message", err.getMessage());
+    } else if (err instanceof DockerCmdExecException) {
       res.put("message", err.getMessage());
     } else if (err instanceof CustomException) {
       res.put("message", err.getMessage());

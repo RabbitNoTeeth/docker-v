@@ -22,7 +22,8 @@ public class HttpServerVerticle extends AbstractVerticle {
       .route()
       .handler(BodyHandler.create())
       .handler(new CrosHandler())
-      .handler(new ResponseHeaderHandler());
+      .handler(new ResponseHeaderHandler())
+      .handler(new RequestLogHandler());
 
     // 挂载子路由
     HttpServerContext.getRoutes().forEach(route -> {
