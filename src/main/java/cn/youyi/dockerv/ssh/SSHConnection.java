@@ -76,26 +76,11 @@ public class SSHConnection implements DockerCmdExecutor {
       InputStream errStream = channelExec.getErrStream();
       channelExec.setCommand(command);
       channelExec.connect();
-
-      byte[] tmp = new byte[1024];
-      StringBuffer stdBuffer = new StringBuffer();
-      StringBuffer errBuffer = new StringBuffer();
-      while (errStream.available() > 0) {
-        int i = errStream.read(tmp, 0, 1024);
-        if (i < 0) {
-          break;
-        }
-        errBuffer.append(new String(tmp, 0, i));
+      String error = IOUtils.toString(errStream, StandardCharsets.UTF_8);
+      if (StringUtils.isNotBlank(error)) {
+        throw new DockerCmdExecException(error);
       }
-      while (stdStream.available() > 0) {
-        int i = stdStream.read(tmp, 0, 1024);
-        if (i < 0) {
-          break;
-        }
-        stdBuffer.append(new String(tmp, 0, i));
-      }
-      System.out.println(channelExec.getExitStatus());
-      throw new DockerCmdExecException();
+      return IOUtils.toString(stdStream, StandardCharsets.UTF_8);
     } catch (Exception e) {
       if (e instanceof DockerCmdExecException) {
         throw (DockerCmdExecException) e;
