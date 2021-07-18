@@ -4,7 +4,7 @@ import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 
 /**
- * 响应后置处理器
+ * response final-handler, end the response
  */
 public class ResponseFinalHandler implements Handler<RoutingContext> {
 

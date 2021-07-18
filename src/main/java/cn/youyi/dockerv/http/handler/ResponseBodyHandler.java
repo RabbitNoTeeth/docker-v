@@ -6,15 +6,15 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
 /**
- * 响应后置处理器
+ * response body handle, convert the response data to a special json str
  */
 public class ResponseBodyHandler implements Handler<RoutingContext> {
 
   @Override
   public void handle(RoutingContext ctx) {
     Object successData = RoutingContextHelper.getSuccessData(ctx);
-    // 如果路由上下文中已经写入了响应数据，那么封装成统一的响应结构返回
     if (successData != null) {
+      // if there is data in the routing context, then warp the data to a special json
       JsonObject data = new JsonObject()
         .put("success", true)
         .put("message", "request complete")

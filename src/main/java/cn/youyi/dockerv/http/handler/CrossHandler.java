@@ -4,9 +4,9 @@ import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 
 /**
- * 跨域处理器
+ * handle browser cross
  */
-public class CrosHandler implements Handler<RoutingContext> {
+public class CrossHandler implements Handler<RoutingContext> {
 
     @Override
     public void handle(RoutingContext ctx) {

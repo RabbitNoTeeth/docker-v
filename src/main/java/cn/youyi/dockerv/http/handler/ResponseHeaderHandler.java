@@ -4,7 +4,7 @@ import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 
 /**
- * 响应前置处理器(设置字符编码等)
+ * response pre-handler, set some headers of response
  */
 public class ResponseHeaderHandler implements Handler<RoutingContext> {
 

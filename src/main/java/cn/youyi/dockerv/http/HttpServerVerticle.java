@@ -17,21 +17,21 @@ public class HttpServerVerticle extends AbstractVerticle {
 
     Router router = Router.router(this.vertx);
 
-    // 挂载前置路由处理器
+    // set handlers which work before sub route
     router
       .route()
       .handler(BodyHandler.create())
-      .handler(new CrosHandler())
+      .handler(new CrossHandler())
       .handler(new ResponseHeaderHandler())
       .handler(new RequestLogHandler());
 
-    // 挂载子路由
+    // mount sub routes
     HttpServerContext.getRoutes().forEach(route -> {
       route.mount(router);
       LOGGER.info("mounted route [{}] success", route.getClass().getSimpleName());
     });
 
-    // 挂载后置路由处理器
+    // set handlers which work after sub route
     router
       .route()
       .handler(new ResponseBodyHandler())
