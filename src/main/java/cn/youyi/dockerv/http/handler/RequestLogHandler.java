@@ -22,7 +22,7 @@ public class RequestLogHandler implements Handler<RoutingContext> {
     params.forEach(entry -> {
       paramsSb.append("\t").append(entry).append("\n");
     });
-    LOGGER.info(">>> http >>> {}:{}\nparams: {\n{}}", method, path, paramsSb);
+    LOGGER.info("http >>> {}:{}\nparams: {\n{}}", method, path, paramsSb);
     ctx.next();
   }
 

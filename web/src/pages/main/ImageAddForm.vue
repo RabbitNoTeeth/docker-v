@@ -56,7 +56,7 @@
                   />
                 </q-tab-panel>
                 <q-tab-panel name="load">
-                  <div class="text-h7">Load an image from a tar archive or STDIN.</div>
+                  <div class="text-h7">Load an image from a tar archive.</div>
                   <q-input
                     v-if="tab === 'load'"
                     filled
@@ -77,6 +77,24 @@
                     lazy-rules
                     :rules="[ val => val && val.length > 0 || 'please input the dictionary path of Dockerfile']"
                     style="margin-top: 20px"
+                  />
+                  <q-input
+                    v-if="tab === 'build'"
+                    filled
+                    v-model="formData_.repository"
+                    label="repository *"
+                    lazy-rules
+                    :rules="[ val => val && val.length > 0 || 'please input the repository of the new image']"
+                    style="margin-top: 10px"
+                  />
+                  <q-input
+                    v-if="tab === 'build'"
+                    filled
+                    v-model="formData_.tag"
+                    label="tag *"
+                    lazy-rules
+                    :rules="[ val => val && val.length > 0 || 'please input the tag of the new image']"
+                    style="margin-top: 10px"
                   />
                 </q-tab-panel>
               </q-tab-panels>
@@ -140,6 +158,8 @@ export default {
         case 'build':
           url = '/api/image/build';
           params.dockerfileDirPath = app.formData_.dockerfileDirPath;
+          params.repository = app.formData_.repository;
+          params.tag = app.formData_.tag;
           break;
         default:
           return;

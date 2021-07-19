@@ -16,9 +16,13 @@ public abstract class AbstractDockerOutParser {
 
   private LinkedHashMap<Integer, String> parseLine(String line) {
     LinkedHashMap<Integer, String> map = new LinkedHashMap<>();
-    Arrays.stream(line.split("[ ]{2,}"))
-      .filter(StringUtils::isNotBlank)
-      .forEach(s -> map.put(line.indexOf(s), s));
+    int index = 0;
+    for (String s : line.split("[ ]{2,}")) {
+      if (StringUtils.isNotBlank(s)) {
+        index = line.indexOf(s, index);
+        map.put(index, s);
+      }
+    }
     return map;
   }
 

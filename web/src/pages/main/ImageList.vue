@@ -55,9 +55,27 @@
           />
         </div>
       </template>
+      <template v-slot:body-cell-CONTAINERS_TOTAL="props">
+        <q-td :props="props">
+          <span>{{props.row.CONTAINERS_UP}}/{{props.row.CONTAINERS_TOTAL}}</span>
+          <q-tooltip>
+            <span>up: {{props.row.CONTAINERS_UP}},&nbsp;</span>
+            <span>exited: {{props.row.CONTAINERS_EXITED}},&nbsp;</span>
+            <span>total: {{props.row.CONTAINERS_TOTAL}}</span>
+          </q-tooltip>
+        </q-td>
+      </template>
       <template v-slot:body-cell-OPERATIONS="props">
         <q-td :props="props">
           <q-btn
+            color="positive"
+            size="xs"
+            label="run"
+            style="margin-right: 5px"
+            @click="onRunClick(props.row)"
+          />
+          <q-btn
+            v-if="props.row.CONTAINERS_TOTAL === 0"
             color="negative"
             size="xs"
             label="remove"
@@ -90,6 +108,7 @@ export default {
         {name: 'IMAGE_ID', field: 'IMAGE_ID', label: 'IMAGE_ID', align: 'left'},
         {name: 'CREATED', field: 'CREATED', label: 'CREATED', align: 'left'},
         {name: 'SIZE', field: 'SIZE', label: 'SIZE', align: 'left'},
+        {name: 'CONTAINERS_TOTAL', field: 'CONTAINERS_TOTAL', label: 'CONTAINERS', align: 'left', format: (val, row) => row.CONTAINERS_UP + '/' + val},
         {name: 'OPERATIONS', field: 'OPERATIONS', label: 'OPERATIONS', align: 'left'}
       ],
       searchParams: {},
@@ -131,7 +150,10 @@ export default {
           } else {
             app.$q.notify({
               type: 'warning',
-              position: 'top',
+              position: 'center',
+              multiLine: true,
+              closeBtn: true,
+              timeout: 30000,
               message: 'could not load images: ' + res.data.message
             });
           }
@@ -161,8 +183,8 @@ export default {
       this.onAddFormClose();
       this.queryList();
     },
-    onRemoveClick(container) {
-      this.curImage = container;
+    onRemoveClick(image) {
+      this.curImage = image;
       this.showRemoveConfirm = true;
     },
     onRemoveConfirmClose() {
@@ -172,6 +194,9 @@ export default {
     onRemoveConfirmSuccess() {
       this.onRemoveConfirmClose();
       this.queryList();
+    },
+    onRunClick(image) {
+
     }
   }
 }

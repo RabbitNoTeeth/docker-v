@@ -23,7 +23,7 @@ public class ImageRoute implements MountableRoute {
     router.get("/api/image/list")
       .handler(ParamValidationHandler
         .create()
-      .addParam(new NotBlankParam("sessionId")))
+        .addParam(new NotBlankParam("sessionId")))
       .handler(this::list);
     router.post("/api/image/pull")
       .handler(ParamValidationHandler
@@ -37,7 +37,14 @@ public class ImageRoute implements MountableRoute {
         .addParam(new NotBlankParam("sessionId"))
         .addParam(new NotBlankParam("tarFilePath")))
       .handler(this::load);
-    // todo build
+    router.post("/api/image/build")
+      .handler(ParamValidationHandler
+        .create()
+        .addParam(new NotBlankParam("sessionId"))
+        .addParam(new NotBlankParam("dockerfileDirPath"))
+        .addParam(new NotBlankParam("repository"))
+        .addParam(new NotBlankParam("tag")))
+      .handler(this::build);
     router.post("/api/image/remove")
       .handler(ParamValidationHandler
         .create()
@@ -47,7 +54,33 @@ public class ImageRoute implements MountableRoute {
   }
 
   /**
+   * build an image from Dockerfile
+   *
+   * @param context
+   */
+  private void build(RoutingContext context) {
+    String sessionId = RoutingContextHelper.getRequestParam(context, "sessionId");
+    String dockerfileDirPath = RoutingContextHelper.getRequestParam(context, "dockerfileDirPath");
+    String repository = RoutingContextHelper.getRequestParam(context, "repository");
+    String tag = RoutingContextHelper.getRequestParam(context, "tag");
+    try {
+      DockerSession session = DockerSessionContainer.getSession(sessionId);
+      String command = DockerBuild.Command.create(dockerfileDirPath, repository, tag).get();
+      String out = session.getCmdExecutor().command(command);
+      DockerBuild.Parser parser = DockerBuild.Parser.create(out);
+      if (parser.success()) {
+        RoutingContextHelper.success(context, repository + ":" + tag);
+      } else {
+        context.fail(new CustomException(out));
+      }
+    } catch (Exception e) {
+      context.fail(e);
+    }
+  }
+
+  /**
    * remove an image
+   *
    * @param context
    */
   private void remove(RoutingContext context) {
@@ -70,6 +103,7 @@ public class ImageRoute implements MountableRoute {
 
   /**
    * load image from a tar file
+   *
    * @param context
    */
   private void load(RoutingContext context) {
@@ -92,6 +126,7 @@ public class ImageRoute implements MountableRoute {
 
   /**
    * pull an image
+   *
    * @param context
    */
   private void pull(RoutingContext context) {
@@ -126,12 +161,25 @@ public class ImageRoute implements MountableRoute {
       DockerSession session = DockerSessionContainer.getSession(sessionId);
       String command = DockerImages.Command.create().get();
       String out = session.getCmdExecutor().command(command);
+      // query images
       List<JsonObject> images = DockerImages.Parser.create(out).parse()
         .stream()
         .filter(image -> StringUtils.isBlank(REPOSITORY) || image.getString("REPOSITORY").contains(REPOSITORY))
         .filter(image -> StringUtils.isBlank(TAG) || image.getString("TAG").contains(TAG))
         .filter(image -> StringUtils.isBlank(IMAGE_ID) || image.getString("IMAGE_ID").contains(IMAGE_ID))
         .collect(Collectors.toList());
+      // query containers
+      String psCommand = DockerPs.Command.create().addOption("-a").get();
+      String psOut = session.getCmdExecutor().command(psCommand);
+      List<JsonObject> containers = DockerPs.Parser.create(psOut).parse();
+      // count image's containers
+      images.forEach(image -> {
+        long upCount = containers.stream().filter(container -> image.getString("REPOSITORY").endsWith(container.getString("IMAGE")) && container.getString("STATUS").startsWith("Up")).count();
+        long exitedCount = containers.stream().filter(container -> image.getString("REPOSITORY").endsWith(container.getString("IMAGE")) && container.getString("STATUS").startsWith("Exited")).count();
+        image.put("CONTAINERS_TOTAL", upCount + exitedCount);
+        image.put("CONTAINERS_UP", upCount);
+        image.put("CONTAINERS_EXITED", exitedCount);
+      });
       RoutingContextHelper.success(context, images);
     } catch (Exception e) {
       context.fail(e);

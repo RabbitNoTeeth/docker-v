@@ -5,11 +5,12 @@ import cn.youyi.dockerv.http.route.impl.ContainerRoute;
 import cn.youyi.dockerv.http.route.impl.ImageRoute;
 import cn.youyi.dockerv.http.route.impl.SessionRoute;
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
 
 public class AppBootstrap {
 
   public static void main(String[] args) {
-    Vertx vertx = Vertx.vertx();
+    Vertx vertx = Vertx.vertx(new VertxOptions().setBlockedThreadCheckInterval(10000));
     // 添加路由
     HttpServerContext.addRoute(new SessionRoute());
     HttpServerContext.addRoute(new ImageRoute());
