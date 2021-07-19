@@ -87,6 +87,7 @@
     </q-table>
     <image-add-form v-if="showAddForm" @close="onAddFormClose" @success="onAddFormSuccess"></image-add-form>
     <image-remove-confirm v-if="showRemoveConfirm" :data="curImage" @close="onRemoveConfirmClose" @success="onRemoveConfirmSuccess"></image-remove-confirm>
+    <container-run-form v-if="showRunForm" :data="curImage" @close="onRunFormClose" @success="onRunFormSuccess"></container-run-form>
   </div>
 </template>
 
@@ -94,10 +95,11 @@
 
 import ImageAddForm from "pages/main/ImageAddForm";
 import ImageRemoveConfirm from "pages/main/ImageRemoveConfirm";
+import ContainerRunForm from "pages/main/ContainerRunForm";
 
 export default {
   name: "ImageList",
-  components: {ImageRemoveConfirm, ImageAddForm},
+  components: {ContainerRunForm, ImageRemoveConfirm, ImageAddForm},
   data() {
     return {
       data: [],
@@ -114,6 +116,7 @@ export default {
       searchParams: {},
       showAddForm: false,
       showRemoveConfirm: false,
+      showRunForm: false,
       curImage: null
     }
   },
@@ -196,7 +199,16 @@ export default {
       this.queryList();
     },
     onRunClick(image) {
-
+      this.curImage = image;
+      this.showRunForm = true;
+    },
+    onRunFormClose() {
+      this.curImage = null;
+      this.showRunForm = false;
+    },
+    onRunFormSuccess() {
+      this.onRunFormClose();
+      this.queryList();
     }
   }
 }

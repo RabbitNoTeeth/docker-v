@@ -82,7 +82,7 @@ export default {
     return {
       showForm: false,
       os: null,
-      splitterModel: 20,
+      splitterModel: 10,
       tab: 'Image'
     }
   },

@@ -7,11 +7,6 @@
         <q-btn icon="close" flat round dense v-close-popup @click="close"/>
       </q-card-section>
       <q-card-section>
-        <div>
-
-        </div>
-      </q-card-section>
-      <q-card-section>
         <q-form
           @submit="onSubmit"
           @reset="onReset"

@@ -45,12 +45,46 @@ public class ImageRoute implements MountableRoute {
         .addParam(new NotBlankParam("repository"))
         .addParam(new NotBlankParam("tag")))
       .handler(this::build);
+    router.post("/api/image/run")
+      .handler(ParamValidationHandler
+        .create()
+        .addParam(new NotBlankParam("sessionId"))
+        .addParam(new NotBlankParam("imageId")))
+      .handler(this::run);
     router.post("/api/image/remove")
       .handler(ParamValidationHandler
         .create()
         .addParam(new NotBlankParam("sessionId"))
         .addParam(new NotBlankParam("imageId")))
       .handler(this::remove);
+  }
+
+  /**
+   * run an image
+   *
+   * @param context
+   */
+  private void run(RoutingContext context) {
+    String sessionId = RoutingContextHelper.getRequestParam(context, "sessionId");
+    String imageId = RoutingContextHelper.getRequestParam(context, "imageId");
+    String options = RoutingContextHelper.getRequestParam(context, "options");
+    try {
+      DockerSession session = DockerSessionContainer.getSession(sessionId);
+      DockerRun.Command cmd = DockerRun.Command.create(imageId);
+      if (StringUtils.isNotBlank(options)) {
+        cmd.addOption(options);
+      }
+      String command = cmd.get();
+      String out = session.getCmdExecutor().command(command);
+      DockerRun.Parser parser = DockerRun.Parser.create(out);
+      if (parser.success()) {
+        RoutingContextHelper.success(context, out);
+      } else {
+        context.fail(new CustomException(out));
+      }
+    } catch (Exception e) {
+      context.fail(e);
+    }
   }
 
   /**
@@ -174,8 +208,10 @@ public class ImageRoute implements MountableRoute {
       List<JsonObject> containers = DockerPs.Parser.create(psOut).parse();
       // count image's containers
       images.forEach(image -> {
-        long upCount = containers.stream().filter(container -> image.getString("REPOSITORY").endsWith(container.getString("IMAGE")) && container.getString("STATUS").startsWith("Up")).count();
-        long exitedCount = containers.stream().filter(container -> image.getString("REPOSITORY").endsWith(container.getString("IMAGE")) && container.getString("STATUS").startsWith("Exited")).count();
+        long upCount = containers.stream().filter(container -> (image.getString("REPOSITORY").endsWith(container.getString("IMAGE")) || image.getString("IMAGE_ID").endsWith(container.getString("IMAGE")))
+          && container.getString("STATUS").startsWith("Up")).count();
+        long exitedCount = containers.stream().filter(container -> (image.getString("REPOSITORY").endsWith(container.getString("IMAGE")) || image.getString("IMAGE_ID").endsWith(container.getString("IMAGE")))
+          && container.getString("STATUS").startsWith("Exited")).count();
         image.put("CONTAINERS_TOTAL", upCount + exitedCount);
         image.put("CONTAINERS_UP", upCount);
         image.put("CONTAINERS_EXITED", exitedCount);
