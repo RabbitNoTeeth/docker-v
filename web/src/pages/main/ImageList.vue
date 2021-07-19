@@ -87,7 +87,7 @@
     </q-table>
     <image-add-form v-if="showAddForm" @close="onAddFormClose" @success="onAddFormSuccess"></image-add-form>
     <image-remove-confirm v-if="showRemoveConfirm" :data="curImage" @close="onRemoveConfirmClose" @success="onRemoveConfirmSuccess"></image-remove-confirm>
-    <container-run-form v-if="showRunForm" :data="curImage" @close="onRunFormClose" @success="onRunFormSuccess"></container-run-form>
+    <container-run-form v-if="showRunForm" :image="curImage" @close="onRunFormClose" @success="onRunFormSuccess"></container-run-form>
   </div>
 </template>
 

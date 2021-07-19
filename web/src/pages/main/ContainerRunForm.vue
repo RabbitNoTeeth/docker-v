@@ -13,22 +13,40 @@
         style="width: 500px"
       >
         <q-card-section style="max-height: 50vh;width: 550px" class="scroll">
-          <div class="text-h6">The name of the new container is required.</div>
-          <q-input
-            filled
-            v-model="formData_.name"
-            label="name *"
-            lazy-rules
-            :rules="[ val => val && val.length > 0 || 'please input the name of new container']"
-            style="margin-top: 10px"
-          />
+          <template v-if="!image">
+            <div class="text-h6">Select the image:</div>
+            <q-select
+              filled
+              v-model="formData_.imageId"
+              :options="images"
+              option-value="value"
+              option-label="label"
+              label="Image *"
+              emit-value
+              map-options
+              lazy-rules
+              :rules="[val => val !== null && val !== '' || 'please select the image']"
+            />
+          </template>
+          <template>
+            <div class="text-h6">Input the name of the new container:</div>
+            <q-input
+              filled
+              v-model="formData_.name"
+              label="name *"
+              lazy-rules
+              :rules="[ val => val && val.length > 0 || 'please input the name of new container']"
+              style="margin-top: 10px"
+            />
+          </template>
           <div class="text-h6">
-            <div>You can add multi options, but they are optional.</div>
+            <div>Input options (optional):</div>
           </div>
           <div class="text-h7">
             <div>
               <span>if you think this mode is not easy to use, you can </span>
-              <span class="change-mode" @click="optionsFlat = !optionsFlat">change to the {{optionsFlat ? 'multi' : 'flat'}} mode</span>
+              <span class="change-mode"
+                    @click="optionsFlat = !optionsFlat">change to the {{ optionsFlat ? 'multi' : 'flat' }} mode</span>
             </div>
           </div>
           <template v-if="optionsFlat">
@@ -93,29 +111,63 @@ export default {
           value: ''
         }
       ],
-      optionsFlat: false
+      optionsFlat: false,
+      images: []
     }
   },
   props: {
-    data: {
+    image: {
       type: Object
     }
   },
   inject: ['sessionId'],
   mounted() {
+    if (!this.image) {
+      this.queryImageList();
+    }
   },
   methods: {
+    queryImageList() {
+      const app = this;
+      app.$axios.get('/api/image/list', {
+        params: {
+          sessionId: app.sessionId
+        }
+      })
+        .then(res => {
+          if (res.data.success) {
+            app.images = res.data.data.map(image => image.REPOSITORY + ' : ' + image.TAG);
+          } else {
+            app.$q.notify({
+              type: 'warning',
+              position: 'center',
+              multiLine: true,
+              closeBtn: true,
+              timeout: 30000,
+              message: 'could not load images: ' + res.data.message
+            });
+          }
+        })
+        .catch(e => {
+          app.$q.notify({
+            type: 'negative',
+            position: 'top',
+            message: 'could not load images. ' + e
+          });
+        })
+    },
     close() {
       this.$emit('close')
     },
     onSubmit() {
       const app = this;
       app.loading = true;
-      const url = '/api/image/run';
-      const options = app.optionsFlat ? app.formData_.options : (app.options.map(o => o.name + ' ' + o.value).join(' ') + ' --name ' + app.formData_.name);
+      const url = '/api/container/run';
+      const options = app.optionsFlat ? app.formData_.options : app.options.map(o => o.name + ' ' + o.value).join(' ');
       const params = {
         sessionId: app.sessionId,
-        imageId: app.data.IMAGE_ID,
+        imageId: app.image ? app.image.IMAGE_ID : app.formData_.imageId,
+        name: app.formData_.name,
         options
       };
       app.$axios.post(url, params)

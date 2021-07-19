@@ -9,19 +9,61 @@
     >
       <template v-slot:top>
         <div>
+          <q-btn
+            color="teal"
+            size="sm"
+            label="new"
+            style="margin-right: 5px"
+            @click="addClick"
+          />
         </div>
-        <div>
+        <div style="position: absolute;right: 15px">
+          <el-input
+            size="mini"
+            placeholder="NAMES"
+            clearable
+            style="width: 150px; margin-right: 5px"
+            v-model="searchParams.NAMES">
+          </el-input>
+          <el-input
+            size="mini"
+            placeholder="CONTAINER_ID"
+            clearable
+            style="width: 150px; margin-right: 5px"
+            v-model="searchParams.CONTAINER_ID">
+          </el-input>
+          <el-input
+            size="mini"
+            placeholder="IMAGE"
+            clearable
+            style="width: 150px; margin-right: 5px"
+            v-model="searchParams.IMAGE">
+          </el-input>
+          <q-btn
+            color="primary"
+            size="sm"
+            label="search"
+            style="margin-right: 5px"
+            @click="refreshClick"
+          />
+          <q-btn
+            color="primary"
+            size="sm"
+            outline
+            label="reset"
+            @click="resetClick"
+          />
         </div>
       </template>
       <template v-slot:body-cell-PORTS="props">
         <q-td :props="props">
           <div v-if="props.row.PORTS && (props.row.PORTS + '').length > 30">
-            <span>{{(props.row.PORTS + '').substring(0, 30)}}&nbsp;...</span>
+            <span>{{ (props.row.PORTS + '').substring(0, 30) }}&nbsp;...</span>
             <q-tooltip>
-              {{props.row.PORTS}}
+              {{ props.row.PORTS }}
             </q-tooltip>
           </div>
-          <div v-else>{{props.row.PORTS}}</div>
+          <div v-else>{{ props.row.PORTS }}</div>
         </q-td>
       </template>
       <template v-slot:body-cell-OPERATIONS="props">
@@ -53,9 +95,13 @@
         </q-td>
       </template>
     </q-table>
-    <container-start-confirm v-if="showStartConfirm" :data="curContainer" @close="onStartConfirmClose" @success="onStartConfirmSuccess"></container-start-confirm>
-    <container-stop-confirm v-if="showStopConfirm" :data="curContainer" @close="onStopConfirmClose" @success="onStopConfirmSuccess"></container-stop-confirm>
-    <container-remove-confirm v-if="showRemoveConfirm" :data="curContainer" @close="onRemoveConfirmClose" @success="onRemoveConfirmSuccess"></container-remove-confirm>
+    <container-start-confirm v-if="showStartConfirm" :data="curContainer" @close="onStartConfirmClose"
+                             @success="onStartConfirmSuccess"></container-start-confirm>
+    <container-stop-confirm v-if="showStopConfirm" :data="curContainer" @close="onStopConfirmClose"
+                            @success="onStopConfirmSuccess"></container-stop-confirm>
+    <container-remove-confirm v-if="showRemoveConfirm" :data="curContainer" @close="onRemoveConfirmClose"
+                              @success="onRemoveConfirmSuccess"></container-remove-confirm>
+    <container-run-form v-if="showRunForm" @close="onRunFormClose" @success="onRunFormSuccess"></container-run-form>
   </div>
 </template>
 
@@ -64,9 +110,11 @@
 import ContainerStartConfirm from "pages/main/ContainerStartConfirm";
 import ContainerStopConfirm from "pages/main/ContainerStopConfirm";
 import ContainerRemoveConfirm from "pages/main/ContainerRemoveConfirm";
+import ContainerRunForm from "pages/main/ContainerRunForm";
+
 export default {
   name: "ContainerList",
-  components: {ContainerRemoveConfirm, ContainerStopConfirm, ContainerStartConfirm},
+  components: {ContainerRunForm, ContainerRemoveConfirm, ContainerStopConfirm, ContainerStartConfirm},
   data() {
     return {
       data: [],
@@ -84,7 +132,9 @@ export default {
       showStartConfirm: false,
       showStopConfirm: false,
       showRemoveConfirm: false,
-      curContainer: null
+      curContainer: null,
+      searchParams: {},
+      showRunForm: false
     }
   },
   inject: ['sessionId'],
@@ -107,7 +157,8 @@ export default {
       const app = this;
       app.$axios.get('/api/container/list', {
         params: {
-          sessionId: app.sessionId
+          sessionId: app.sessionId,
+          ...app.searchParams
         }
       })
         .then(res => {
@@ -166,6 +217,23 @@ export default {
     },
     onRemoveConfirmSuccess() {
       this.onRemoveConfirmClose();
+      this.queryList();
+    },
+    addClick() {
+      this.showRunForm = true;
+    },
+    refreshClick() {
+      this.queryList();
+    },
+    resetClick() {
+      this.searchParams = {};
+      this.queryList();
+    },
+    onRunFormClose() {
+      this.showRunForm = false;
+    },
+    onRunFormSuccess() {
+      this.onRunFormClose();
       this.queryList();
     }
   }
