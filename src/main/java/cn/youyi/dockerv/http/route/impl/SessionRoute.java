@@ -28,6 +28,26 @@ public class SessionRoute implements MountableRoute {
         .addParam(new NotBlankParam("name"))
         .addParam(new NotBlankParam("host")))
       .handler(this::add);
+    router
+      .post("/api/session/close")
+      .handler(ParamValidationHandler
+        .create()
+        .addParam(new NotBlankParam("sessionId")))
+      .handler(this::close);
+  }
+
+  /**
+   * close a session
+   * @param context
+   */
+  private void close(RoutingContext context) {
+    String sessionId = RoutingContextHelper.getRequestParam(context, "sessionId");
+    try {
+      DockerSessionContainer.removeSession(sessionId);
+      RoutingContextHelper.success(context, sessionId);
+    } catch (Exception e) {
+      context.fail(e);
+    }
   }
 
   /**

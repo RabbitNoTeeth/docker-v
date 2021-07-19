@@ -45,7 +45,10 @@ public class DockerSessionContainer {
    */
   public static DockerSession removeSession(String sessionId) {
     DockerSession session = SESSION_MAP.remove(sessionId);
-    LOGGER.info("a session[name:{}, host:{}] removed! container size: {}", session.getName(), session.getHost(), SESSION_MAP.size());
+    if (session != null) {
+      session.close();
+      LOGGER.info("a session[name:{}, host:{}] removed! container size: {}", session.getName(), session.getHost(), SESSION_MAP.size());
+    }
     return session;
   }
 
