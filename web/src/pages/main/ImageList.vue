@@ -57,11 +57,11 @@
       </template>
       <template v-slot:body-cell-CONTAINERS_TOTAL="props">
         <q-td :props="props">
-          <span>{{props.row.CONTAINERS_UP}}/{{props.row.CONTAINERS_TOTAL}}</span>
+          <span>{{ props.row.CONTAINERS_UP }}/{{ props.row.CONTAINERS_TOTAL }}</span>
           <q-tooltip>
-            <span>up: {{props.row.CONTAINERS_UP}},&nbsp;</span>
-            <span>exited: {{props.row.CONTAINERS_EXITED}},&nbsp;</span>
-            <span>total: {{props.row.CONTAINERS_TOTAL}}</span>
+            <span>up: {{ props.row.CONTAINERS_UP }},&nbsp;</span>
+            <span>exited: {{ props.row.CONTAINERS_EXITED }},&nbsp;</span>
+            <span>total: {{ props.row.CONTAINERS_TOTAL }}</span>
           </q-tooltip>
         </q-td>
       </template>
@@ -75,6 +75,13 @@
             @click="onRunClick(props.row)"
           />
           <q-btn
+            color="primary"
+            size="xs"
+            label="save"
+            style="margin-right: 5px"
+            @click="onSaveClick(props.row)"
+          />
+          <q-btn
             v-if="props.row.CONTAINERS_TOTAL === 0"
             color="negative"
             size="xs"
@@ -86,8 +93,12 @@
       </template>
     </q-table>
     <image-add-form v-if="showAddForm" @close="onAddFormClose" @success="onAddFormSuccess"></image-add-form>
-    <image-remove-confirm v-if="showRemoveConfirm" :data="curImage" @close="onRemoveConfirmClose" @success="onRemoveConfirmSuccess"></image-remove-confirm>
-    <container-run-form v-if="showRunForm" :image="curImage" @close="onRunFormClose" @success="onRunFormSuccess"></container-run-form>
+    <image-remove-confirm v-if="showRemoveConfirm" :data="curImage" @close="onRemoveConfirmClose"
+                          @success="onRemoveConfirmSuccess"></image-remove-confirm>
+    <container-run-form v-if="showRunForm" :image="curImage" @close="onRunFormClose"
+                        @success="onRunFormSuccess"></container-run-form>
+    <image-save-form v-if="showSaveForm" :image="curImage" @close="onSaveFormClose"
+                     @success="onSaveFormSuccess"></image-save-form>
   </div>
 </template>
 
@@ -96,10 +107,11 @@
 import ImageAddForm from "pages/main/ImageAddForm";
 import ImageRemoveConfirm from "pages/main/ImageRemoveConfirm";
 import ContainerRunForm from "pages/main/ContainerRunForm";
+import ImageSaveForm from "pages/main/ImageSaveForm";
 
 export default {
   name: "ImageList",
-  components: {ContainerRunForm, ImageRemoveConfirm, ImageAddForm},
+  components: {ImageSaveForm, ContainerRunForm, ImageRemoveConfirm, ImageAddForm},
   data() {
     return {
       data: [],
@@ -110,13 +122,20 @@ export default {
         {name: 'IMAGE_ID', field: 'IMAGE_ID', label: 'IMAGE_ID', align: 'left'},
         {name: 'CREATED', field: 'CREATED', label: 'CREATED', align: 'left'},
         {name: 'SIZE', field: 'SIZE', label: 'SIZE', align: 'left'},
-        {name: 'CONTAINERS_TOTAL', field: 'CONTAINERS_TOTAL', label: 'CONTAINERS', align: 'left', format: (val, row) => row.CONTAINERS_UP + '/' + val},
+        {
+          name: 'CONTAINERS_TOTAL',
+          field: 'CONTAINERS_TOTAL',
+          label: 'CONTAINERS',
+          align: 'left',
+          format: (val, row) => row.CONTAINERS_UP + '/' + val
+        },
         {name: 'OPERATIONS', field: 'OPERATIONS', label: 'OPERATIONS', align: 'left'}
       ],
       searchParams: {},
       showAddForm: false,
       showRemoveConfirm: false,
       showRunForm: false,
+      showSaveForm: false,
       curImage: null
     }
   },
@@ -208,6 +227,18 @@ export default {
     },
     onRunFormSuccess() {
       this.onRunFormClose();
+      this.queryList();
+    },
+    onSaveClick(image) {
+      this.curImage = image;
+      this.showSaveForm = true;
+    },
+    onSaveFormClose() {
+      this.curImage = null;
+      this.showSaveForm = false;
+    },
+    onSaveFormSuccess() {
+      this.onSaveFormClose();
       this.queryList();
     }
   }

@@ -213,4 +213,8 @@ export default {
 
 <style scoped>
 
+.q-tab--active {
+  background: #e0e0e0 !important;
+}
+
 </style>

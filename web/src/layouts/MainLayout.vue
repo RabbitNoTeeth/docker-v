@@ -12,15 +12,16 @@
         <template v-for="(item, index) in tabs">
           <q-tab :key="index" :name="item.id" icon="fas fa-terminal">
             <template v-slot:default>
-              <span style="margin-left: 10px">{{item.name}}</span>
-              <q-icon v-if="item.id !== 'new'" name="fas fa-times" color="orange" style="margin-left: 15px;font-size: 1.5em;" @click="onCloseClick(item)"/>
+              <span style="margin-left: 10px">{{ item.name }}</span>
+              <q-icon v-if="item.id !== 'new'" name="fas fa-times" color="orange"
+                      style="margin-left: 15px;font-size: 1.5em;" @click="onCloseClick(item)"/>
             </template>
           </q-tab>
         </template>
       </q-tabs>
     </q-header>
 
-    <q-page-container style="width: 100%;height: 100%;position: fixed">
+    <q-page-container style="width: 100%;height: 100%;position: fixed;">
       <q-tab-panels v-model="tab" animated style="width: 100%;height: 100%">
         <template v-for="(item, index) in tabs">
           <q-tab-panel :key="index" :name="item.id" style="width: 100%;height: 100%">
@@ -30,7 +31,8 @@
       </q-tab-panels>
     </q-page-container>
 
-    <session-close-confirm v-if="showSessionCloseConfirm" :session="curSession" @close="onSessionCloseConfirmClose" @success="onSessionCloseConfirmSuccess"></session-close-confirm>
+    <session-close-confirm v-if="showSessionCloseConfirm" :session="curSession" @close="onSessionCloseConfirmClose"
+                           @success="onSessionCloseConfirmSuccess"></session-close-confirm>
   </q-layout>
 
 </template>
@@ -39,6 +41,7 @@
 
 import Session from "pages/main/Session";
 import SessionCloseConfirm from "pages/main/SessionCloseConfirm";
+
 export default {
   name: 'MainLayout',
   components: {SessionCloseConfirm, Session},
@@ -108,3 +111,11 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+
+.q-tab--active {
+  background: #21ba45 !important;
+}
+
+</style>

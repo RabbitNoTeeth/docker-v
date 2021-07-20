@@ -177,4 +177,8 @@ export default {
   font-size: 14em;
 }
 
+.q-tab--active {
+  background: #e0e0e0 !important;
+}
+
 </style>

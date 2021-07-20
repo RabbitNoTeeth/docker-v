@@ -45,12 +45,45 @@ public class ImageRoute implements MountableRoute {
         .addParam(new NotBlankParam("repository"))
         .addParam(new NotBlankParam("tag")))
       .handler(this::build);
+    router.post("/api/image/save")
+      .handler(ParamValidationHandler
+        .create()
+        .addParam(new NotBlankParam("sessionId"))
+        .addParam(new NotBlankParam("repository"))
+        .addParam(new NotBlankParam("tag"))
+        .addParam(new NotBlankParam("savePath")))
+      .handler(this::save);
     router.post("/api/image/remove")
       .handler(ParamValidationHandler
         .create()
         .addParam(new NotBlankParam("sessionId"))
         .addParam(new NotBlankParam("imageId")))
       .handler(this::remove);
+  }
+
+  /**
+   * save an image as a tar file
+   *
+   * @param context
+   */
+  private void save(RoutingContext context) {
+    String sessionId = RoutingContextHelper.getRequestParam(context, "sessionId");
+    String repository = RoutingContextHelper.getRequestParam(context, "repository");
+    String tag = RoutingContextHelper.getRequestParam(context, "tag");
+    String savePath = RoutingContextHelper.getRequestParam(context, "savePath");
+    try {
+      DockerSession session = DockerSessionContainer.getSession(sessionId);
+      String command = DockerSave.Command.create(repository, tag).addOption("-o " + savePath).get();
+      String out = session.getCmdExecutor().command(command);
+      DockerSave.Parser parser = DockerSave.Parser.create(out);
+      if (parser.success()) {
+        RoutingContextHelper.success(context, repository + ":" + tag);
+      } else {
+        context.fail(new CustomException(out));
+      }
+    } catch (Exception e) {
+      context.fail(e);
+    }
   }
 
   /**

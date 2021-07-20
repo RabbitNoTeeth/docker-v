@@ -60,7 +60,7 @@
           <div v-if="props.row.PORTS && (props.row.PORTS + '').length > 30">
             <span>{{ (props.row.PORTS + '').substring(0, 30) }}&nbsp;...</span>
             <q-tooltip>
-              {{ props.row.PORTS }}
+              <p :key="index" v-for="(item, index) in props.row.PORTS.split(',')">{{item}}</p>
             </q-tooltip>
           </div>
           <div v-else>{{ props.row.PORTS }}</div>
