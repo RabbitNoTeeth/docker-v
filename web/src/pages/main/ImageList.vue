@@ -70,7 +70,7 @@
           <q-btn
             color="positive"
             size="xs"
-            label="run"
+            label="new container"
             style="margin-right: 5px"
             @click="onRunClick(props.row)"
           />
@@ -95,8 +95,8 @@
     <image-add-form v-if="showAddForm" @close="onAddFormClose" @success="onAddFormSuccess"></image-add-form>
     <image-remove-confirm v-if="showRemoveConfirm" :data="curImage" @close="onRemoveConfirmClose"
                           @success="onRemoveConfirmSuccess"></image-remove-confirm>
-    <container-run-form v-if="showRunForm" :image="curImage" @close="onRunFormClose"
-                        @success="onRunFormSuccess"></container-run-form>
+    <container-add-form v-if="showRunForm" :image="curImage" @close="onRunFormClose"
+                        @success="onRunFormSuccess"></container-add-form>
     <image-save-form v-if="showSaveForm" :image="curImage" @close="onSaveFormClose"
                      @success="onSaveFormSuccess"></image-save-form>
   </div>
@@ -106,12 +106,12 @@
 
 import ImageAddForm from "pages/main/ImageAddForm";
 import ImageRemoveConfirm from "pages/main/ImageRemoveConfirm";
-import ContainerRunForm from "pages/main/ContainerRunForm";
+import ContainerAddForm from "pages/main/ContainerAddForm";
 import ImageSaveForm from "pages/main/ImageSaveForm";
 
 export default {
   name: "ImageList",
-  components: {ImageSaveForm, ContainerRunForm, ImageRemoveConfirm, ImageAddForm},
+  components: {ImageSaveForm, ContainerAddForm, ImageRemoveConfirm, ImageAddForm},
   data() {
     return {
       data: [],

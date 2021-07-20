@@ -1,5 +1,6 @@
-package cn.youyi.dockerv.docker.command;
+package cn.youyi.dockerv.docker.command.impl;
 
+import cn.youyi.dockerv.docker.command.DockerCommand;
 import cn.youyi.dockerv.docker.parser.AbstractDockerOutParser;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
@@ -8,12 +9,29 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class DockerRmi {
+public class DockerRmi implements DockerCommand{
 
-  private DockerRmi() {
+  private final String[] images;
+
+  private DockerRmi(String... images) {
+    this.images = images;
   }
 
-  public static class Command {
+  public static DockerRmi create(String... images) {
+    return new DockerRmi(images);
+  }
+
+  @Override
+  public DockerCommand.Command command() {
+    return new Command(images);
+  }
+
+  @Override
+  public DockerCommand.Parser parser(String out) {
+    return new Parser(out, images);
+  }
+
+  public static class Command implements DockerCommand.Command {
     private final List<String> options = new ArrayList<>();
     private final String[] images;
 
@@ -21,16 +39,19 @@ public class DockerRmi {
       this.images = images;
     }
 
-    public static Command create(String... images) {
-      return new Command(images);
-    }
-
-    public Command addOption(String option) {
+    @Override
+    public DockerCommand.Command addOption(String option) {
       options.add(option);
       return this;
     }
 
-    public String get() {
+    @Override
+    public DockerCommand.Command addCommand(String command) {
+      return this;
+    }
+
+    @Override
+    public String getStr() {
       StringBuilder cmdSb = new StringBuilder().append("docker").append(" ").append("rmi");
       options.forEach(option -> cmdSb.append(" ").append(option));
       Arrays.stream(images).forEach(image -> cmdSb.append(" ").append(image));
@@ -38,7 +59,7 @@ public class DockerRmi {
     }
   }
 
-  public static class Parser extends AbstractDockerOutParser {
+  public static class Parser extends DockerCommand.AbstractParser {
 
     private final String[] images;
 
@@ -47,15 +68,12 @@ public class DockerRmi {
       this.images = images;
     }
 
-    public static Parser create(String out, String... images) {
-      return new Parser(out, images);
-    }
-
     @Override
     public boolean success() {
       return StringUtils.isNotBlank(out) && out.contains(images[0]);
     }
 
+    @Override
     public List<JsonObject> parse() {
       return parse2JsonObjectList();
     }

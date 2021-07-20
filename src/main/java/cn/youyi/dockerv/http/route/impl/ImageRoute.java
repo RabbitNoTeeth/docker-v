@@ -1,6 +1,7 @@
 package cn.youyi.dockerv.http.route.impl;
 
-import cn.youyi.dockerv.docker.command.*;
+import cn.youyi.dockerv.docker.command.DockerCommand;
+import cn.youyi.dockerv.docker.command.impl.*;
 import cn.youyi.dockerv.docker.session.DockerSession;
 import cn.youyi.dockerv.docker.session.DockerSessionContainer;
 import cn.youyi.dockerv.http.context.RoutingContextHelper;
@@ -73,9 +74,11 @@ public class ImageRoute implements MountableRoute {
     String savePath = RoutingContextHelper.getRequestParam(context, "savePath");
     try {
       DockerSession session = DockerSessionContainer.getSession(sessionId);
-      String command = DockerSave.Command.create(repository, tag).addOption("-o " + savePath).get();
-      String out = session.getCmdExecutor().command(command);
-      DockerSave.Parser parser = DockerSave.Parser.create(out);
+      DockerCommand dockerCommand = DockerSave.create(repository, tag);
+      DockerCommand.Command command = dockerCommand.command();
+      String commandStr = command.addOption("-o " + savePath).getStr();
+      String out = session.getCmdExecutor().command(commandStr);
+      DockerCommand.Parser parser = dockerCommand.parser(out);
       if (parser.success()) {
         RoutingContextHelper.success(context, repository + ":" + tag);
       } else {
@@ -98,9 +101,11 @@ public class ImageRoute implements MountableRoute {
     String tag = RoutingContextHelper.getRequestParam(context, "tag");
     try {
       DockerSession session = DockerSessionContainer.getSession(sessionId);
-      String command = DockerBuild.Command.create(dockerfileDirPath, repository, tag).get();
-      String out = session.getCmdExecutor().command(command);
-      DockerBuild.Parser parser = DockerBuild.Parser.create(out);
+      DockerCommand dockerCommand = DockerBuild.create(dockerfileDirPath, repository, tag);
+      DockerCommand.Command command = dockerCommand.command();
+      String commandStr = command.getStr();
+      String out = session.getCmdExecutor().command(commandStr);
+      DockerCommand.Parser parser = dockerCommand.parser(out);
       if (parser.success()) {
         RoutingContextHelper.success(context, repository + ":" + tag);
       } else {
@@ -121,9 +126,11 @@ public class ImageRoute implements MountableRoute {
     String imageId = RoutingContextHelper.getRequestParam(context, "imageId");
     try {
       DockerSession session = DockerSessionContainer.getSession(sessionId);
-      String command = DockerRmi.Command.create(imageId).get();
-      String out = session.getCmdExecutor().command(command);
-      DockerRmi.Parser parser = DockerRmi.Parser.create(out, imageId);
+      DockerCommand dockerCommand = DockerRmi.create(imageId);
+      DockerCommand.Command command = dockerCommand.command();
+      String commandStr = command.getStr();
+      String out = session.getCmdExecutor().command(commandStr);
+      DockerCommand.Parser parser = dockerCommand.parser(out);
       if (parser.success()) {
         RoutingContextHelper.success(context, imageId);
       } else {
@@ -144,9 +151,11 @@ public class ImageRoute implements MountableRoute {
     String tarFilePath = RoutingContextHelper.getRequestParam(context, "tarFilePath");
     try {
       DockerSession session = DockerSessionContainer.getSession(sessionId);
-      String command = DockerLoad.Command.create(tarFilePath).addOption("-q").get();
-      String out = session.getCmdExecutor().command(command);
-      DockerLoad.Parser parser = DockerLoad.Parser.create(out);
+      DockerCommand dockerCommand = DockerLoad.create(tarFilePath);
+      DockerCommand.Command command = dockerCommand.command();
+      String commandStr = command.addOption("-q").getStr();
+      String out = session.getCmdExecutor().command(commandStr);
+      DockerCommand.Parser parser = dockerCommand.parser(out);
       if (parser.success()) {
         RoutingContextHelper.success(context, tarFilePath);
       } else {
@@ -167,9 +176,11 @@ public class ImageRoute implements MountableRoute {
     String image = RoutingContextHelper.getRequestParam(context, "image");
     try {
       DockerSession session = DockerSessionContainer.getSession(sessionId);
-      String command = DockerPull.Command.create(image).get();
-      String out = session.getCmdExecutor().command(command);
-      DockerPull.Parser parser = DockerPull.Parser.create(out);
+      DockerCommand dockerCommand = DockerPull.create(image);
+      DockerCommand.Command command = dockerCommand.command();
+      String commandStr = command.getStr();
+      String out = session.getCmdExecutor().command(commandStr);
+      DockerCommand.Parser parser = dockerCommand.parser(out);
       if (parser.success()) {
         RoutingContextHelper.success(context, image);
       } else {
@@ -192,19 +203,25 @@ public class ImageRoute implements MountableRoute {
     String IMAGE_ID = RoutingContextHelper.getRequestParam(context, "IMAGE_ID");
     try {
       DockerSession session = DockerSessionContainer.getSession(sessionId);
-      String command = DockerImages.Command.create().get();
-      String out = session.getCmdExecutor().command(command);
+      DockerCommand dockerCommand = DockerImages.create();
+      DockerCommand.Command command = dockerCommand.command();
+      String commandStr = command.getStr();
+      String out = session.getCmdExecutor().command(commandStr);
       // query images
-      List<JsonObject> images = DockerImages.Parser.create(out).parse()
+      DockerCommand.Parser parser = dockerCommand.parser(out);
+      List<JsonObject> images = parser.parse()
         .stream()
         .filter(image -> StringUtils.isBlank(REPOSITORY) || image.getString("REPOSITORY").contains(REPOSITORY))
         .filter(image -> StringUtils.isBlank(TAG) || image.getString("TAG").contains(TAG))
         .filter(image -> StringUtils.isBlank(IMAGE_ID) || image.getString("IMAGE_ID").contains(IMAGE_ID))
         .collect(Collectors.toList());
       // query containers
-      String psCommand = DockerPs.Command.create().addOption("-a").get();
+      DockerCommand dockerCommand2 = DockerPs.create();
+      DockerCommand.Command command2 = dockerCommand2.command();
+      String psCommand = command2.addOption("-a").getStr();
       String psOut = session.getCmdExecutor().command(psCommand);
-      List<JsonObject> containers = DockerPs.Parser.create(psOut).parse();
+      DockerCommand.Parser parser2 = dockerCommand2.parser(psOut);
+      List<JsonObject> containers = parser2.parse();
       // count image's containers
       images.forEach(image -> {
         long upCount = containers.stream().filter(container -> (image.getString("REPOSITORY").endsWith(container.getString("IMAGE")) || image.getString("IMAGE_ID").endsWith(container.getString("IMAGE")))

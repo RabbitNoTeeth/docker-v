@@ -1,12 +1,13 @@
 package cn.youyi.dockerv.docker.parser;
 
+import cn.youyi.dockerv.docker.command.DockerCommand;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public abstract class AbstractDockerOutParser {
+public abstract class AbstractDockerOutParser implements DockerCommand.Parser {
 
   protected final String out;
 
@@ -48,7 +49,5 @@ public abstract class AbstractDockerOutParser {
     }
     return res;
   }
-
-  public abstract boolean success();
 
 }

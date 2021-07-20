@@ -1,19 +1,36 @@
-package cn.youyi.dockerv.docker.command;
+package cn.youyi.dockerv.docker.command.impl;
 
+import cn.youyi.dockerv.docker.command.DockerCommand;
 import cn.youyi.dockerv.docker.parser.AbstractDockerOutParser;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-public class DockerLoad {
+public class DockerLoad implements DockerCommand{
 
-  private DockerLoad() {
+  private final String tarFilePath;
+
+  private DockerLoad(String tarFilePath) {
+    this.tarFilePath = tarFilePath;
   }
 
-  public static class Command {
+  public static DockerLoad create(String tarFilePath) {
+    return new DockerLoad(tarFilePath);
+  }
+
+  @Override
+  public DockerCommand.Command command() {
+    return new Command(tarFilePath);
+  }
+
+  @Override
+  public DockerCommand.Parser parser(String out) {
+    return new Parser(out);
+  }
+
+  public static class Command implements DockerCommand.Command {
     private List<String> options = new ArrayList<>();
     private final String tarFilePath;
 
@@ -21,16 +38,19 @@ public class DockerLoad {
       this.tarFilePath = tarFilePath;
     }
 
-    public static Command create(String tarFilePath) {
-      return new Command(tarFilePath);
-    }
-
-    public Command addOption(String option) {
+    @Override
+    public DockerCommand.Command addOption(String option) {
       options.add(option);
       return this;
     }
 
-    public String get() {
+    @Override
+    public DockerCommand.Command addCommand(String command) {
+      return this;
+    }
+
+    @Override
+    public String getStr() {
       StringBuilder cmdSb = new StringBuilder().append("docker").append(" ").append("load").append(" ").append("-i");
       cmdSb.append(" ").append(tarFilePath);
       options.forEach(option -> cmdSb.append(" ").append(option));
@@ -38,14 +58,10 @@ public class DockerLoad {
     }
   }
 
-  public static class Parser extends AbstractDockerOutParser {
+  public static class Parser extends DockerCommand.AbstractParser {
 
     private Parser(String out) {
       super(out);
-    }
-
-    public static Parser create(String out) {
-      return new Parser(out);
     }
 
     @Override
@@ -53,6 +69,7 @@ public class DockerLoad {
       return StringUtils.isNotBlank(out) && out.contains("Loaded image");
     }
 
+    @Override
     public List<JsonObject> parse() {
       return parse2JsonObjectList();
     }

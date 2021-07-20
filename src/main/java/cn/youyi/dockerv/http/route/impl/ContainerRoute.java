@@ -1,6 +1,7 @@
 package cn.youyi.dockerv.http.route.impl;
 
-import cn.youyi.dockerv.docker.command.*;
+import cn.youyi.dockerv.docker.command.DockerCommand;
+import cn.youyi.dockerv.docker.command.impl.*;
 import cn.youyi.dockerv.docker.session.DockerSession;
 import cn.youyi.dockerv.docker.session.DockerSessionContainer;
 import cn.youyi.dockerv.http.context.RoutingContextHelper;
@@ -26,13 +27,14 @@ public class ContainerRoute implements MountableRoute {
         .create()
         .addParam(new NotBlankParam("sessionId")))
       .handler(this::list);
-    router.post("/api/container/run")
+    router.post("/api/container/add")
       .handler(ParamValidationHandler
         .create()
         .addParam(new NotBlankParam("sessionId"))
         .addParam(new NotBlankParam("name"))
-        .addParam(new NotBlankParam("imageId")))
-      .handler(this::run);
+        .addParam(new NotBlankParam("imageId"))
+        .addParam(new NotBlankParam("directStart")))
+      .handler(this::add);
     router.post("/api/container/start")
       .handler(ParamValidationHandler
         .create()
@@ -58,20 +60,26 @@ public class ContainerRoute implements MountableRoute {
    *
    * @param context
    */
-  private void run(RoutingContext context) {
+  private void add(RoutingContext context) {
     String sessionId = RoutingContextHelper.getRequestParam(context, "sessionId");
     String imageId = RoutingContextHelper.getRequestParam(context, "imageId");
     String name = RoutingContextHelper.getRequestParam(context, "name");
     String options = RoutingContextHelper.getRequestParam(context, "options");
+    String exCommand = RoutingContextHelper.getRequestParam(context, "command");
+    String directStart = RoutingContextHelper.getRequestParam(context, "directStart");
     try {
       DockerSession session = DockerSessionContainer.getSession(sessionId);
-      DockerRun.Command cmd = DockerRun.Command.create(imageId);
+      DockerCommand dockerCommand = "1".equals(directStart) ? DockerRun.create(imageId) : DockerCreate.create(imageId);
+      DockerCommand.Command command = dockerCommand.command();
       if (StringUtils.isNotBlank(options)) {
-        cmd.addOption(options);
+        command.addOption(options);
       }
-      String command = cmd.addOption("--name " + name).get();
-      String out = session.getCmdExecutor().command(command);
-      DockerRun.Parser parser = DockerRun.Parser.create(out);
+      if (StringUtils.isNotBlank(exCommand)) {
+        command.addCommand(exCommand);
+      }
+      String commandStr = command.addOption("--name " + name).getStr();
+      String out = session.getCmdExecutor().command(commandStr);
+      DockerCommand.Parser parser = dockerCommand.parser(out);
       if (parser.success()) {
         RoutingContextHelper.success(context, out);
       } else {
@@ -92,9 +100,11 @@ public class ContainerRoute implements MountableRoute {
     String containerId = RoutingContextHelper.getRequestParam(context, "containerId");
     try {
       DockerSession session = DockerSessionContainer.getSession(sessionId);
-      String command = DockerRm.Command.create(containerId).get();
-      String out = session.getCmdExecutor().command(command);
-      DockerRm.Parser parser = DockerRm.Parser.create(out, containerId);
+      DockerCommand dockerCommand = DockerRm.create(containerId);
+      DockerCommand.Command command = dockerCommand.command();
+      String commandStr = command.getStr();
+      String out = session.getCmdExecutor().command(commandStr);
+      DockerCommand.Parser parser = dockerCommand.parser(out);
       if (parser.success()) {
         RoutingContextHelper.success(context, containerId);
       } else {
@@ -115,9 +125,11 @@ public class ContainerRoute implements MountableRoute {
     String containerId = RoutingContextHelper.getRequestParam(context, "containerId");
     try {
       DockerSession session = DockerSessionContainer.getSession(sessionId);
-      String command = DockerStop.Command.create(containerId).get();
-      String out = session.getCmdExecutor().command(command);
-      DockerStop.Parser parser = DockerStop.Parser.create(out, containerId);
+      DockerCommand dockerCommand = DockerStop.create(containerId);
+      DockerCommand.Command command = dockerCommand.command();
+      String commandStr = command.getStr();
+      String out = session.getCmdExecutor().command(commandStr);
+      DockerCommand.Parser parser = dockerCommand.parser(out);
       if (parser.success()) {
         RoutingContextHelper.success(context, containerId);
       } else {
@@ -138,9 +150,11 @@ public class ContainerRoute implements MountableRoute {
     String containerId = RoutingContextHelper.getRequestParam(context, "containerId");
     try {
       DockerSession session = DockerSessionContainer.getSession(sessionId);
-      String command = DockerStart.Command.create(containerId).get();
-      String out = session.getCmdExecutor().command(command);
-      DockerStart.Parser parser = DockerStart.Parser.create(out, containerId);
+      DockerCommand dockerCommand = DockerStart.create(containerId);
+      DockerCommand.Command command = dockerCommand.command();
+      String commandStr = command.getStr();
+      String out = session.getCmdExecutor().command(commandStr);
+      DockerCommand.Parser parser = dockerCommand.parser(out);
       if (parser.success()) {
         RoutingContextHelper.success(context, containerId);
       } else {
@@ -164,13 +178,19 @@ public class ContainerRoute implements MountableRoute {
     try {
       DockerSession session = DockerSessionContainer.getSession(sessionId);
       // query containers
-      String command = DockerPs.Command.create().addOption("-a").get();
-      String out = session.getCmdExecutor().command(command);
-      List<JsonObject> containers = DockerPs.Parser.create(out).parse();
+      DockerCommand dockerCommand = DockerPs.create();
+      DockerCommand.Command command = dockerCommand.command();
+      String commandStr = command.addOption("-a").getStr();
+      String out = session.getCmdExecutor().command(commandStr);
+      DockerCommand.Parser parser = dockerCommand.parser(out);
+      List<JsonObject> containers = parser.parse();
       // query images
-      String imagesCommand = DockerImages.Command.create().get();
-      String imagesCOut = session.getCmdExecutor().command(imagesCommand);
-      List<JsonObject> images = DockerImages.Parser.create(imagesCOut).parse();
+      DockerCommand dockerImagesCommand = DockerImages.create();
+      DockerCommand.Command imagesCommand = dockerImagesCommand.command();
+      String imagesCommandStr = imagesCommand.getStr();
+      String imagesOut = session.getCmdExecutor().command(imagesCommandStr);
+      DockerCommand.Parser dockerImagesParser = dockerImagesCommand.parser(imagesOut);
+      List<JsonObject> images = dockerImagesParser.parse();
       // filter containers
       containers = containers
         .stream()

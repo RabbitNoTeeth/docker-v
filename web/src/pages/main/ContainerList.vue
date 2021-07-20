@@ -69,7 +69,7 @@
       <template v-slot:body-cell-OPERATIONS="props">
         <q-td :props="props">
           <q-btn
-            v-if="props.row.STATUS.indexOf('Exited') > -1"
+            v-if="props.row.STATUS.indexOf('Exited') > -1 || props.row.STATUS.indexOf('Created') > -1"
             color="positive"
             size="xs"
             label="start"
@@ -85,7 +85,7 @@
             @click="onStopClick(props.row)"
           />
           <q-btn
-            v-if="props.row.STATUS.indexOf('Exited') > -1"
+            v-if="props.row.STATUS.indexOf('Exited') > -1 || props.row.STATUS.indexOf('Created') > -1"
             color="negative"
             size="xs"
             label="remove"
@@ -101,7 +101,7 @@
                             @success="onStopConfirmSuccess"></container-stop-confirm>
     <container-remove-confirm v-if="showRemoveConfirm" :data="curContainer" @close="onRemoveConfirmClose"
                               @success="onRemoveConfirmSuccess"></container-remove-confirm>
-    <container-run-form v-if="showRunForm" @close="onRunFormClose" @success="onRunFormSuccess"></container-run-form>
+    <container-add-form v-if="showAddForm" @close="onAddFormClose" @success="onAddFormSuccess"></container-add-form>
   </div>
 </template>
 
@@ -110,11 +110,11 @@
 import ContainerStartConfirm from "pages/main/ContainerStartConfirm";
 import ContainerStopConfirm from "pages/main/ContainerStopConfirm";
 import ContainerRemoveConfirm from "pages/main/ContainerRemoveConfirm";
-import ContainerRunForm from "pages/main/ContainerRunForm";
+import ContainerAddForm from "pages/main/ContainerAddForm";
 
 export default {
   name: "ContainerList",
-  components: {ContainerRunForm, ContainerRemoveConfirm, ContainerStopConfirm, ContainerStartConfirm},
+  components: {ContainerAddForm, ContainerRemoveConfirm, ContainerStopConfirm, ContainerStartConfirm},
   data() {
     return {
       data: [],
@@ -134,7 +134,7 @@ export default {
       showRemoveConfirm: false,
       curContainer: null,
       searchParams: {},
-      showRunForm: false
+      showAddForm: false
     }
   },
   inject: ['sessionId'],
@@ -220,7 +220,7 @@ export default {
       this.queryList();
     },
     addClick() {
-      this.showRunForm = true;
+      this.showAddForm = true;
     },
     refreshClick() {
       this.queryList();
@@ -229,10 +229,10 @@ export default {
       this.searchParams = {};
       this.queryList();
     },
-    onRunFormClose() {
-      this.showRunForm = false;
+    onAddFormClose() {
+      this.showAddForm = false;
     },
-    onRunFormSuccess() {
+    onAddFormSuccess() {
       this.onRunFormClose();
       this.queryList();
     }

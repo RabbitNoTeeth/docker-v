@@ -1,19 +1,36 @@
-package cn.youyi.dockerv.docker.command;
+package cn.youyi.dockerv.docker.command.impl;
 
+import cn.youyi.dockerv.docker.command.DockerCommand;
 import cn.youyi.dockerv.docker.parser.AbstractDockerOutParser;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-public class DockerPull {
+public class DockerPull implements DockerCommand{
 
-  private DockerPull() {
+  private final String image;
+
+  private DockerPull(String image) {
+    this.image = image;
   }
 
-  public static class Command {
+  public static DockerPull create(String image) {
+    return new DockerPull(image);
+  }
+
+  @Override
+  public DockerCommand.Command command() {
+    return new Command(image);
+  }
+
+  @Override
+  public DockerCommand.Parser parser(String out) {
+    return new Parser(out);
+  }
+
+  public static class Command implements DockerCommand.Command {
     private List<String> options = new ArrayList<>();
     private final String image;
 
@@ -21,16 +38,19 @@ public class DockerPull {
       this.image = image;
     }
 
-    public static Command create(String image) {
-      return new Command(image);
-    }
-
-    public Command addOption(String option) {
+    @Override
+    public DockerCommand.Command addOption(String option) {
       options.add(option);
       return this;
     }
 
-    public String get() {
+    @Override
+    public DockerCommand.Command addCommand(String command) {
+      return this;
+    }
+
+    @Override
+    public String getStr() {
       StringBuilder cmdSb = new StringBuilder().append("docker").append(" ").append("pull");
       options.forEach(option -> cmdSb.append(" ").append(option));
       cmdSb.append(" ").append(image);
@@ -38,14 +58,10 @@ public class DockerPull {
     }
   }
 
-  public static class Parser extends AbstractDockerOutParser {
+  public static class Parser extends DockerCommand.AbstractParser {
 
     private Parser(String out) {
       super(out);
-    }
-
-    public static Parser create(String out) {
-      return new Parser(out);
     }
 
     @Override
@@ -53,6 +69,7 @@ public class DockerPull {
       return StringUtils.isNotBlank(out) && out.contains("Downloaded newer image for");
     }
 
+    @Override
     public List<JsonObject> parse() {
       return parse2JsonObjectList();
     }

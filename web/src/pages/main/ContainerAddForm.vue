@@ -2,7 +2,7 @@
   <q-dialog v-model="show" persistent transition-show="scale" transition-hide="scale">
     <q-card style="width: 560px">
       <q-card-section class="row items-center q-pb-none">
-        <div class="text-h6">run a new container</div>
+        <div class="text-h6">create a new container</div>
         <q-space/>
         <q-btn icon="close" flat round dense v-close-popup @click="close"/>
       </q-card-section>
@@ -39,44 +39,53 @@
               style="margin-top: 10px"
             />
           </template>
-          <div class="text-h6">
-            <div>Input options (optional):</div>
-          </div>
-          <div class="text-h7">
-            <div>
-              <span>if you think this mode is not easy to use, you can </span>
-              <span class="change-mode"
-                    @click="optionsFlat = !optionsFlat">change to the {{ optionsFlat ? 'multi' : 'flat' }} mode</span>
+          <template>
+            <div class="text-h6">Start after the new container created:</div>
+            <div class="q-gutter-sm">
+              <q-radio v-model="formData_.directStart" val="1" label="yes" color="positive" />
+              <q-radio v-model="formData_.directStart" val="0" label="no" color="negative" />
             </div>
-          </div>
-          <template v-if="optionsFlat">
-            <q-input
-              filled
-              v-model="formData_.options"
-              label="options"
-              style="margin-top: 10px"
-            />
           </template>
-          <template v-else>
-            <div class="row" v-for="(option, index) in options" :key="index" style="margin-top: 10px">
-              <q-input
-                filled
-                v-model="option.name"
-                label="option"
-              />
-              <div style="padding-top: 15px;margin: 0 5px">
-                <q-icon name="fas fa-minus"/>
-              </div>
-              <q-input
-                filled
-                v-model="option.value"
-                label="value"
-              />
-              <q-btn v-if="options.length !== 1 || index !== 0" icon="fas fa-minus" color="negative" size="sm"
-                     @click="onRemoveOptionClick(index)" style="margin-left: 5px"/>
-              <q-btn v-if="index === options.length - 1" icon="fas fa-plus" color="secondary" size="sm"
-                     @click="onAddOptionClick" style="margin-left: 5px"/>
+          <template>
+            <div class="text-h6">
+              <div>Input options (optional):</div>
             </div>
+            <div class="text-h7">
+              <div>
+                <span>if you think this mode is not easy to use, you can </span>
+                <span class="change-mode"
+                      @click="optionsFlat = !optionsFlat">change to the {{ optionsFlat ? 'multi' : 'flat' }} mode</span>
+              </div>
+            </div>
+            <template v-if="optionsFlat">
+              <q-input
+                filled
+                v-model="formData_.options"
+                label="options"
+                style="margin-top: 10px"
+              />
+            </template>
+            <template v-else>
+              <div class="row" v-for="(option, index) in options" :key="index" style="margin-top: 10px">
+                <q-input
+                  filled
+                  v-model="option.name"
+                  label="option"
+                />
+                <div style="padding-top: 15px;margin: 0 5px">
+                  <q-icon name="fas fa-minus"/>
+                </div>
+                <q-input
+                  filled
+                  v-model="option.value"
+                  label="value"
+                />
+                <q-btn v-if="options.length !== 1 || index !== 0" icon="fas fa-minus" color="negative" size="sm"
+                       @click="onRemoveOptionClick(index)" style="margin-left: 5px"/>
+                <q-btn v-if="index === options.length - 1" icon="fas fa-plus" color="secondary" size="sm"
+                       @click="onAddOptionClick" style="margin-left: 5px"/>
+              </div>
+            </template>
           </template>
         </q-card-section>
         <q-card-section style="width: 550px">
@@ -99,11 +108,13 @@
 <script>
 
 export default {
-  name: "ContainerRunForm",
+  name: "ContainerAddForm",
   data() {
     return {
       show: true,
-      formData_: {},
+      formData_: {
+        directStart: '1'
+      },
       loading: false,
       options: [
         {
@@ -111,7 +122,7 @@ export default {
           value: ''
         }
       ],
-      optionsFlat: false,
+      optionsFlat: true,
       images: []
     }
   },
@@ -162,13 +173,14 @@ export default {
     onSubmit() {
       const app = this;
       app.loading = true;
-      const url = '/api/container/run';
+      const url = '/api/container/add';
       const options = app.optionsFlat ? app.formData_.options : app.options.map(o => o.name + ' ' + o.value).join(' ');
       const params = {
         sessionId: app.sessionId,
         imageId: app.image ? app.image.IMAGE_ID : app.formData_.imageId,
         name: app.formData_.name,
-        options
+        options,
+        directStart: app.formData_.directStart
       };
       app.$axios.post(url, params)
         .then(res => {

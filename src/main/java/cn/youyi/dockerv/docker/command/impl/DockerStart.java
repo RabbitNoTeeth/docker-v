@@ -1,5 +1,6 @@
-package cn.youyi.dockerv.docker.command;
+package cn.youyi.dockerv.docker.command.impl;
 
+import cn.youyi.dockerv.docker.command.DockerCommand;
 import cn.youyi.dockerv.docker.parser.AbstractDockerOutParser;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
@@ -8,12 +9,29 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class DockerStart {
+public class DockerStart implements DockerCommand{
 
-  private DockerStart() {
+  private final String[] containers;
+
+  private DockerStart(String... containers) {
+    this.containers = containers;
   }
 
-  public static class Command {
+  public static DockerStart create(String... containers) {
+    return new DockerStart(containers);
+  }
+
+  @Override
+  public DockerCommand.Command command() {
+    return new Command(containers);
+  }
+
+  @Override
+  public DockerCommand.Parser parser(String out) {
+    return new Parser(out, containers);
+  }
+
+  public static class Command implements DockerCommand.Command {
     private final List<String> options = new ArrayList<>();
     private final String[] containers;
 
@@ -21,16 +39,19 @@ public class DockerStart {
       this.containers = containers;
     }
 
-    public static Command create(String... containers) {
-      return new Command(containers);
-    }
-
-    public Command addOption(String option) {
+    @Override
+    public DockerCommand.Command addOption(String option) {
       options.add(option);
       return this;
     }
 
-    public String get() {
+    @Override
+    public DockerCommand.Command addCommand(String command) {
+      return this;
+    }
+
+    @Override
+    public String getStr() {
       StringBuilder cmdSb = new StringBuilder().append("docker").append(" ").append("start");
       options.forEach(option -> cmdSb.append(" ").append(option));
       Arrays.stream(containers).forEach(image -> cmdSb.append(" ").append(image));
@@ -38,7 +59,7 @@ public class DockerStart {
     }
   }
 
-  public static class Parser extends AbstractDockerOutParser {
+  public static class Parser extends DockerCommand.AbstractParser {
 
     private final String[] containers;
 
@@ -47,15 +68,12 @@ public class DockerStart {
       this.containers = containers;
     }
 
-    public static Parser create(String out, String... containers) {
-      return new Parser(out, containers);
-    }
-
     @Override
     public boolean success() {
       return StringUtils.isNotBlank(out) && out.contains(containers[0]);
     }
 
+    @Override
     public List<JsonObject> parse() {
       return parse2JsonObjectList();
     }
