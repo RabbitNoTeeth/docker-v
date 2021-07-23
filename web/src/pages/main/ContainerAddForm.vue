@@ -47,7 +47,7 @@
             </div>
           </template>
           <template>
-            <div class="text-h6">
+            <div class="text-h6" style="margin-top: 10px">
               <div>Input options (optional):</div>
             </div>
             <div class="text-h7">
@@ -86,6 +86,17 @@
                        @click="onAddOptionClick" style="margin-left: 5px"/>
               </div>
             </template>
+          </template>
+          <template>
+            <div class="text-h6" style="margin-top: 20px">
+              <div>Input command (optional):</div>
+            </div>
+            <q-input
+              filled
+              v-model="formData_.command"
+              label="command"
+              style="margin-top: 10px"
+            />
           </template>
         </q-card-section>
         <q-card-section style="width: 550px">
@@ -180,7 +191,8 @@ export default {
         imageId: app.image ? app.image.IMAGE_ID : app.formData_.imageId,
         name: app.formData_.name,
         options,
-        directStart: app.formData_.directStart
+        directStart: app.formData_.directStart,
+        command: app.formData_.command
       };
       app.$axios.post(url, params)
         .then(res => {
