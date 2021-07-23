@@ -40,9 +40,20 @@ java {
   targetCompatibility = JavaVersion.VERSION_11
 }
 
+//val taskBuildWebPages by tasks.register<Exec>("BuildWebPages") {
+//  workingDir("./web")
+//  commandLine("quasar", "build")
+//}
+
+val taskCopyWebPages by tasks.register<Copy>("CopyWebPages") {
+  description = "copy the web build files to the /resources"
+  from("./web/dist/spa")
+  into("./src/main/resources/web")
+}
+
 tasks.withType<ShadowJar> {
-  minimize()
-  archiveClassifier.set("fat")
+  dependsOn(taskCopyWebPages)
+  archiveClassifier.set("")
   manifest {
     attributes(mapOf("Main-Class" to mainClassName))
   }
@@ -55,3 +66,4 @@ tasks.withType<Test> {
     events = setOf(PASSED, SKIPPED, FAILED)
   }
 }
+

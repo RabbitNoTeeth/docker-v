@@ -22,3 +22,6 @@ logs
 ### mac ###
 *.DS_Store
 
+### vue ###
+dist
+src/main/resources/web

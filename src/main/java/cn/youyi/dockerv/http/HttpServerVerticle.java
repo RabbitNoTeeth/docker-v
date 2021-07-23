@@ -5,6 +5,7 @@ import cn.youyi.dockerv.http.handler.*;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.handler.StaticHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +36,7 @@ public class HttpServerVerticle extends AbstractVerticle {
     router
       .route()
       .handler(new ResponseBodyHandler())
+      .handler(StaticHandler.create("web").setIndexPage("index.html"))
       .handler(new ResponseFinalHandler())
       .failureHandler(new FailureHandler());
 
