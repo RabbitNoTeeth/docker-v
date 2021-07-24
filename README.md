@@ -40,16 +40,19 @@ and you can manage multi dockers at one time.
 
 here are the commands that docker-v support, and i will continuously add more command support .
 
-- [x] pull
-- [x] load
-- [x] save
-- [x] build
-- [x] rmi
-- [x] create
-- [x] run
-- [x] start
-- [x] stop
-- [x] rm
+- ✅ pull
+
+- ✅ load
+
+- ✅ save
+- ✅ build
+- ✅ rmi
+- ✅ create
+- ✅ run
+- ✅ start
+- ✅ stop
+- ✅ rm
+- ✅ inspect
 
 
 
