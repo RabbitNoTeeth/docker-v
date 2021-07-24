@@ -69,6 +69,13 @@
       <template v-slot:body-cell-OPERATIONS="props">
         <q-td :props="props">
           <q-btn
+            color="primary"
+            size="xs"
+            label="inspect"
+            style="margin-right: 5px"
+            @click="onInspectClick(props.row)"
+          />
+          <q-btn
             v-if="props.row.STATUS.indexOf('Exited') > -1 || props.row.STATUS.indexOf('Created') > -1"
             color="positive"
             size="xs"
@@ -102,6 +109,8 @@
     <container-remove-confirm v-if="showRemoveConfirm" :data="curContainer" @close="onRemoveConfirmClose"
                               @success="onRemoveConfirmSuccess"></container-remove-confirm>
     <container-add-form v-if="showAddForm" @close="onAddFormClose" @success="onAddFormSuccess"></container-add-form>
+
+    <container-inspect-view v-if="showInspectView" :data="curContainer" @close="onInspectViewClose"></container-inspect-view>
   </div>
 </template>
 
@@ -111,10 +120,13 @@ import ContainerStartConfirm from "pages/main/ContainerStartConfirm";
 import ContainerStopConfirm from "pages/main/ContainerStopConfirm";
 import ContainerRemoveConfirm from "pages/main/ContainerRemoveConfirm";
 import ContainerAddForm from "pages/main/ContainerAddForm";
+import ContainerInspectView from "pages/main/ContainerInspectView";
 
 export default {
   name: "ContainerList",
-  components: {ContainerAddForm, ContainerRemoveConfirm, ContainerStopConfirm, ContainerStartConfirm},
+  components: {
+    ContainerInspectView,
+    ContainerAddForm, ContainerRemoveConfirm, ContainerStopConfirm, ContainerStartConfirm},
   data() {
     return {
       data: [],
@@ -134,7 +146,8 @@ export default {
       showRemoveConfirm: false,
       curContainer: null,
       searchParams: {},
-      showAddForm: false
+      showAddForm: false,
+      showInspectView: false
     }
   },
   inject: ['sessionId'],
@@ -235,6 +248,14 @@ export default {
     onAddFormSuccess() {
       this.onRunFormClose();
       this.queryList();
+    },
+    onInspectClick(container) {
+      this.curContainer = container;
+      this.showInspectView = true;
+    },
+    onInspectViewClose() {
+      this.curContainer = null;
+      this.showInspectView = false;
     }
   }
 }

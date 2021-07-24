@@ -53,6 +53,37 @@ public class ContainerRoute implements MountableRoute {
         .addParam(new NotBlankParam("sessionId"))
         .addParam(new NotBlankParam("containerId")))
       .handler(this::remove);
+    router.post("/api/container/inspect")
+      .handler(ParamValidationHandler
+        .create()
+        .addParam(new NotBlankParam("sessionId"))
+        .addParam(new NotBlankParam("containerId")))
+      .handler(this::inspect);
+  }
+
+  /**
+   * inspect a container
+   *
+   * @param context
+   */
+  private void inspect(RoutingContext context) {
+    String sessionId = RoutingContextHelper.getRequestParam(context, "sessionId");
+    String containerId = RoutingContextHelper.getRequestParam(context, "containerId");
+    try {
+      DockerSession session = DockerSessionContainer.getSession(sessionId);
+      DockerCommand dockerCommand = DockerInspect.create(containerId);
+      DockerCommand.Command command = dockerCommand.command();
+      String commandStr = command.getStr();
+      String out = session.getCmdExecutor().command(commandStr);
+      DockerCommand.Parser parser = dockerCommand.parser(out);
+      if (parser.success()) {
+        RoutingContextHelper.success(context, out);
+      } else {
+        context.fail(new CustomException(out));
+      }
+    } catch (Exception e) {
+      context.fail(e);
+    }
   }
 
   /**

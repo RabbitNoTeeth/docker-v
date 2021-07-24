@@ -60,6 +60,37 @@ public class ImageRoute implements MountableRoute {
         .addParam(new NotBlankParam("sessionId"))
         .addParam(new NotBlankParam("imageId")))
       .handler(this::remove);
+    router.post("/api/image/inspect")
+      .handler(ParamValidationHandler
+        .create()
+        .addParam(new NotBlankParam("sessionId"))
+        .addParam(new NotBlankParam("imageId")))
+      .handler(this::inspect);
+  }
+
+  /**
+   * inspect an image
+   *
+   * @param context
+   */
+  private void inspect(RoutingContext context) {
+    String sessionId = RoutingContextHelper.getRequestParam(context, "sessionId");
+    String imageId = RoutingContextHelper.getRequestParam(context, "imageId");
+    try {
+      DockerSession session = DockerSessionContainer.getSession(sessionId);
+      DockerCommand dockerCommand = DockerInspect.create(imageId);
+      DockerCommand.Command command = dockerCommand.command();
+      String commandStr = command.getStr();
+      String out = session.getCmdExecutor().command(commandStr);
+      DockerCommand.Parser parser = dockerCommand.parser(out);
+      if (parser.success()) {
+        RoutingContextHelper.success(context, out);
+      } else {
+        context.fail(new CustomException(out));
+      }
+    } catch (Exception e) {
+      context.fail(e);
+    }
   }
 
   /**

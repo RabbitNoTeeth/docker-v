@@ -68,6 +68,13 @@
       <template v-slot:body-cell-OPERATIONS="props">
         <q-td :props="props">
           <q-btn
+            color="primary"
+            size="xs"
+            label="inspect"
+            style="margin-right: 5px"
+            @click="onInspectClick(props.row)"
+          />
+          <q-btn
             color="positive"
             size="xs"
             label="new container"
@@ -99,6 +106,7 @@
                         @success="onRunFormSuccess"></container-add-form>
     <image-save-form v-if="showSaveForm" :image="curImage" @close="onSaveFormClose"
                      @success="onSaveFormSuccess"></image-save-form>
+    <image-inspect-view v-if="showInspectView" :data="curImage" @close="onInspectViewClose"></image-inspect-view>
   </div>
 </template>
 
@@ -108,10 +116,11 @@ import ImageAddForm from "pages/main/ImageAddForm";
 import ImageRemoveConfirm from "pages/main/ImageRemoveConfirm";
 import ContainerAddForm from "pages/main/ContainerAddForm";
 import ImageSaveForm from "pages/main/ImageSaveForm";
+import ImageInspectView from "pages/main/ImageInspectView";
 
 export default {
   name: "ImageList",
-  components: {ImageSaveForm, ContainerAddForm, ImageRemoveConfirm, ImageAddForm},
+  components: {ImageInspectView, ImageSaveForm, ContainerAddForm, ImageRemoveConfirm, ImageAddForm},
   data() {
     return {
       data: [],
@@ -136,7 +145,8 @@ export default {
       showRemoveConfirm: false,
       showRunForm: false,
       showSaveForm: false,
-      curImage: null
+      curImage: null,
+      showInspectView: false
     }
   },
   inject: ['sessionId'],
@@ -240,6 +250,14 @@ export default {
     onSaveFormSuccess() {
       this.onSaveFormClose();
       this.queryList();
+    },
+    onInspectClick(image) {
+      this.curImage = image;
+      this.showInspectView = true;
+    },
+    onInspectViewClose() {
+      this.curImage = null;
+      this.showInspectView = false;
     }
   }
 }

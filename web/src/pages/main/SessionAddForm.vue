@@ -2,7 +2,7 @@
   <q-dialog v-model="show" persistent transition-show="scale" transition-hide="scale">
     <q-card>
       <q-card-section class="row items-center q-pb-none">
-        <div class="text-h6">new session</div>
+        <div class="text-h6">new session - ssh</div>
         <q-space/>
         <q-btn icon="close" flat round dense v-close-popup @click="close"/>
       </q-card-section>
@@ -68,8 +68,8 @@ export default {
     return {
       show: true,
       formData_: {
-        name: '192.168.3.35',
-        host: '192.168.3.35',
+        name: '192.168.0.105',
+        host: '192.168.0.105',
         port: 22,
         user: 'root',
         password: '123456'
